@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "BricolageGrotesque";
+  src: url("/assets/fonts/BricolageGrotesque.woff2") format("woff2");
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/assets/fonts/Satoshi.woff2") format("woff2");
+  font-weight: 300 700;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+    /* Asteroid dark theme */
+    --background: 0.08 0.002 286;
+    --foreground: 1 0 0;
+    --card: 0.11 0.005 260;
+    --card-foreground: 1 0 0;
+    --popover: 0.13 0.007 270;
+    --popover-foreground: 1 0 0;
+    --primary: 0.83 0.11 195;
+    --primary-foreground: 0.08 0.002 286;
+    --secondary: 0.15 0.007 270;
+    --secondary-foreground: 1 0 0;
+    --muted: 0.15 0.005 264;
+    --muted-foreground: 0.76 0.009 264;
+    --accent: 0.7 0.19 45;
+    --accent-foreground: 0.08 0.002 286;
+    --destructive: 0.62 0.22 25;
+    --destructive-foreground: 1 0 0;
+    --border: 0.92 0.005 260 / 12%;
+    --input: 0.92 0.005 260 / 15%;
+    --ring: 0.83 0.11 195;
+    --chart-1: 0.83 0.11 195;
+    --chart-2: 0.7 0.19 45;
+    --chart-3: 0.52 0.22 261;
+    --chart-4: 0.87 0.16 84;
+    --chart-5: 0.78 0.16 155;
+    --sidebar: 0.11 0.005 260;
+    --sidebar-foreground: 1 0 0;
+    --sidebar-primary: 0.83 0.11 195;
+    --sidebar-primary-foreground: 0.08 0.002 286;
+    --sidebar-accent: 0.15 0.007 270;
+    --sidebar-accent-foreground: 1 0 0;
+    --sidebar-border: 0.92 0.005 260 / 12%;
+    --sidebar-ring: 0.83 0.11 195;
+
+    /* Custom asteroid tokens */
+    --cyan: 0.83 0.11 195;
+    --orange: 0.7 0.19 45;
+    --blue: 0.52 0.22 261;
+    --yellow: 0.87 0.16 84;
+    --green: 0.78 0.16 155;
+  }
+
+  .dark {
+    --background: 0.08 0.002 286;
+    --foreground: 1 0 0;
+    --card: 0.11 0.005 260;
+    --card-foreground: 1 0 0;
+    --popover: 0.13 0.007 270;
+    --popover-foreground: 1 0 0;
+    --primary: 0.83 0.11 195;
+    --primary-foreground: 0.08 0.002 286;
+    --secondary: 0.15 0.007 270;
+    --secondary-foreground: 1 0 0;
+    --muted: 0.15 0.005 264;
+    --muted-foreground: 0.76 0.009 264;
+    --accent: 0.7 0.19 45;
+    --accent-foreground: 0.08 0.002 286;
+    --destructive: 0.62 0.22 25;
+    --destructive-foreground: 1 0 0;
+    --border: 0.92 0.005 260 / 12%;
+    --input: 0.92 0.005 260 / 15%;
+    --ring: 0.83 0.11 195;
+    --chart-1: 0.83 0.11 195;
+    --chart-2: 0.7 0.19 45;
+    --chart-3: 0.52 0.22 261;
+    --chart-4: 0.87 0.16 84;
+    --chart-5: 0.78 0.16 155;
+    --sidebar: 0.11 0.005 260;
+    --sidebar-foreground: 1 0 0;
+    --sidebar-primary: 0.83 0.11 195;
+    --sidebar-primary-foreground: 0.08 0.002 286;
+    --sidebar-accent: 0.15 0.007 270;
+    --sidebar-accent-foreground: 1 0 0;
+    --sidebar-border: 0.92 0.005 260 / 12%;
+    --sidebar-ring: 0.83 0.11 195;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    background-image: radial-gradient(
+      ellipse at 50% 0%,
+      oklch(0.14 0.03 195 / 40%) 0%,
+      transparent 60%
+    );
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .glow-cyan {
+    box-shadow: 0 0 20px oklch(0.83 0.11 195 / 30%), 0 0 60px
+      oklch(0.83 0.11 195 / 10%);
+  }
+  .glow-orange {
+    box-shadow: 0 0 20px oklch(0.7 0.19 45 / 30%), 0 0 60px
+      oklch(0.7 0.19 45 / 10%);
+  }
+  .glow-blue {
+    box-shadow: 0 0 20px oklch(0.52 0.22 261 / 30%), 0 0 60px
+      oklch(0.52 0.22 261 / 10%);
+  }
+  .glow-green {
+    box-shadow: 0 0 20px oklch(0.78 0.16 155 / 30%), 0 0 60px
+      oklch(0.78 0.16 155 / 10%);
+  }
+  .border-cyan {
+    border-color: oklch(0.83 0.11 195);
+  }
+  .border-orange {
+    border-color: oklch(0.7 0.19 45);
+  }
+  .border-blue {
+    border-color: oklch(0.52 0.22 261);
+  }
+  .text-cyan {
+    color: oklch(0.83 0.11 195);
+  }
+  .text-orange {
+    color: oklch(0.7 0.19 45);
+  }
+  .text-green {
+    color: oklch(0.78 0.16 155);
+  }
+  .text-yellow-ast {
+    color: oklch(0.87 0.16 84);
+  }
+  .bg-cyan {
+    background-color: oklch(0.83 0.11 195);
+  }
+  .bg-orange {
+    background-color: oklch(0.7 0.19 45);
+  }
+  .bg-blue {
+    background-color: oklch(0.52 0.22 261);
+  }
+  .card-dark {
+    background-color: oklch(0.11 0.005 260);
+    border: 1px solid oklch(0.92 0.005 260 / 12%);
+  }
+  .card-dark-elevated {
+    background-color: oklch(0.13 0.007 270);
+    border: 1px solid oklch(0.92 0.005 260 / 15%);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes mic-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px oklch(0.83 0.11 195 / 50%), 0 0 60px
+      oklch(0.83 0.11 195 / 20%);
+  }
+  50% {
+    box-shadow: 0 0 40px oklch(0.83 0.11 195 / 80%), 0 0 100px
+      oklch(0.83 0.11 195 / 40%);
+  }
+}
+
+@keyframes sound-wave {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+.animate-mic-glow {
+  animation: mic-glow 2s ease-in-out infinite;
+}
+
+.animate-sound-wave {
+  animation: sound-wave 0.8s ease-in-out infinite;
+}
