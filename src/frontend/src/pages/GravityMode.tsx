@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Camera,
+  CameraOff,
   CheckCircle,
   Play,
   Square,
@@ -12,14 +13,14 @@ import {
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppPage } from "../App";
 
 interface GravityModeProps {
   onNavigate: (page: AppPage) => void;
 }
 
-const CAMERA_READINGS = [
+const OVERLAY_READINGS = [
   {
     type: "clear",
     text: "Clear path ahead",
@@ -79,25 +80,134 @@ export default function GravityModePage({ onNavigate }: GravityModeProps) {
   const [voiceFeedback, setVoiceFeedback] = useState<
     Array<{ text: string; id: number }>
   >([]);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [hasCameraStream, setHasCameraStream] = useState(false);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const speak = useCallback((text: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 1.1;
+    window.speechSynthesis.speak(utt);
+  }, []);
+
+  const stopCamera = useCallback(() => {
+    if (cameraStreamRef.current) {
+      for (const t of cameraStreamRef.current.getTracks()) t.stop();
+      cameraStreamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setHasCameraStream(false);
+  }, []);
+
+  const startCamera = useCallback(async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError(
+        "Camera is not supported in this browser. Please use a modern browser.",
+      );
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      cameraStreamRef.current = stream;
+      setHasCameraStream(true);
+      setCameraError(null);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      const error = err as DOMException;
+      if (
+        error.name === "NotAllowedError" ||
+        error.name === "PermissionDeniedError"
+      ) {
+        setCameraError(
+          "Camera permission was denied. Please allow camera access and try again.",
+        );
+      } else if (
+        error.name === "NotFoundError" ||
+        error.name === "DevicesNotFoundError"
+      ) {
+        setCameraError(
+          "No camera found on this device. Please connect a camera and try again.",
+        );
+      } else {
+        setCameraError(
+          `Camera unavailable: ${error.message}. Please check your device settings.`,
+        );
+      }
+    }
+  }, []);
+
+  // Start/stop camera when isActive or cameraEnabled changes
+  useEffect(() => {
+    if (isActive && cameraEnabled) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+  }, [isActive, cameraEnabled, startCamera, stopCamera]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (scanTimerRef.current) clearInterval(scanTimerRef.current);
+      // Access the latest stream value directly
+      stopCamera();
+    };
+  }, [stopCamera]);
+
+  // Simulated scanning overlay
   useEffect(() => {
     if (!isActive) return;
     const timer = setInterval(() => {
       setCurrentReading((i) => {
-        const next = (i + 1) % CAMERA_READINGS.length;
+        const next = (i + 1) % OVERLAY_READINGS.length;
+        const reading = OVERLAY_READINGS[next];
         setVoiceFeedback((prev) =>
-          [{ text: CAMERA_READINGS[next].text, id: Date.now() }, ...prev].slice(
-            0,
-            5,
-          ),
+          [{ text: reading.text, id: Date.now() }, ...prev].slice(0, 5),
         );
+        if (audioEnabled) {
+          // Speak warnings/dangers
+          if (reading.type !== "clear") {
+            setTimeout(() => {
+              if (window.speechSynthesis) {
+                const utt = new SpeechSynthesisUtterance(reading.text);
+                utt.rate = 1.1;
+                window.speechSynthesis.speak(utt);
+              }
+            }, 0);
+          }
+        }
+        if (hapticsEnabled && reading.type !== "clear") {
+          navigator.vibrate?.([100, 50, 100]);
+        }
         return next;
       });
     }, 2500);
+    scanTimerRef.current = timer;
     return () => clearInterval(timer);
-  }, [isActive]);
+  }, [isActive, audioEnabled, hapticsEnabled]);
 
-  const reading = CAMERA_READINGS[currentReading];
+  const handleToggle = useCallback(() => {
+    if (isActive) {
+      setIsActive(false);
+      speak("GravityMode stopped.");
+    } else {
+      setIsActive(true);
+      speak("GravityMode activated. Scanning your environment.");
+    }
+  }, [isActive, speak]);
+
+  const reading = OVERLAY_READINGS[currentReading];
   const ReadingIcon = reading.icon;
 
   return (
@@ -143,19 +253,64 @@ export default function GravityModePage({ onNavigate }: GravityModeProps) {
           </div>
         </div>
 
-        {/* Main Camera View */}
+        {/* Camera / detection view */}
         <motion.div
           animate={isActive ? { borderColor: reading.color } : {}}
           transition={{ duration: 0.5 }}
-          className="rounded-2xl overflow-hidden mb-6"
+          className="rounded-2xl overflow-hidden mb-6 relative"
           style={{
-            border: `2px solid ${isActive ? reading.color : "oklch(0.70 0.19 45 / 30%)"}`,
-            backgroundColor: "oklch(0.09 0.002 270)",
+            border: `2px solid ${
+              isActive ? reading.color : "oklch(0.70 0.19 45 / 30%)"
+            }`,
+            backgroundColor: "oklch(0.06 0.002 270)",
             minHeight: "280px",
           }}
         >
-          <div className="flex flex-col items-center justify-center h-full p-8 gap-6 min-h-[280px]">
-            {isActive ? (
+          {/* Live camera feed */}
+          {isActive && hasCameraStream && !cameraError && (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover"
+              aria-label="Live camera feed for obstacle detection"
+            />
+          )}
+
+          {/* Overlay layer on top of video */}
+          <div
+            className="relative z-10 flex flex-col items-center justify-center h-full p-8 gap-6 min-h-[280px]"
+            style={{
+              background:
+                isActive && hasCameraStream && !cameraError
+                  ? "oklch(0.06 0.002 270 / 50%)"
+                  : undefined,
+            }}
+          >
+            {cameraError && isActive ? (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="flex flex-col items-center gap-4 text-center"
+              >
+                <CameraOff
+                  className="w-14 h-14"
+                  style={{ color: "oklch(0.62 0.22 25)" }}
+                  aria-hidden
+                />
+                <p
+                  className="text-sm font-medium max-w-xs"
+                  style={{ color: "oklch(0.85 0.12 25)" }}
+                  data-ocid="gravity.error_state"
+                >
+                  {cameraError}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Obstacle detection will continue with audio cues only
+                </p>
+              </div>
+            ) : isActive ? (
               <>
                 <motion.div
                   key={currentReading}
@@ -164,12 +319,12 @@ export default function GravityModePage({ onNavigate }: GravityModeProps) {
                   className="flex flex-col items-center gap-3"
                 >
                   <ReadingIcon
-                    className="w-16 h-16"
+                    className="w-16 h-16 drop-shadow-lg"
                     style={{ color: reading.color }}
                     aria-label={reading.text}
                   />
                   <p
-                    className="font-display font-bold text-2xl text-center"
+                    className="font-display font-bold text-2xl text-center drop-shadow-lg"
                     style={{ color: reading.color }}
                     aria-live="assertive"
                   >
@@ -182,7 +337,7 @@ export default function GravityModePage({ onNavigate }: GravityModeProps) {
                     style={{ backgroundColor: "oklch(0.70 0.19 45)" }}
                     aria-hidden
                   />
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-white/80 drop-shadow">
                     Scanning environment...
                   </span>
                 </div>
@@ -205,7 +360,7 @@ export default function GravityModePage({ onNavigate }: GravityModeProps) {
         {/* Main Start/Stop button */}
         <button
           type="button"
-          onClick={() => setIsActive(!isActive)}
+          onClick={handleToggle}
           className="w-full py-5 rounded-xl font-display font-bold text-xl uppercase tracking-widest text-background flex items-center justify-center gap-3 transition-all hover:opacity-90 active:scale-[0.98] mb-6"
           style={{
             backgroundColor: isActive
@@ -319,9 +474,10 @@ export default function GravityModePage({ onNavigate }: GravityModeProps) {
               border: "1px solid oklch(0.92 0.005 260 / 15%)",
             }}
             aria-live="polite"
+            aria-label="Voice feedback log"
           >
             <h2 className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground mb-3">
-              Voice Feedback Log
+              Detection Log
             </h2>
             <div className="flex flex-col gap-2">
               {voiceFeedback.map((item, i) => (

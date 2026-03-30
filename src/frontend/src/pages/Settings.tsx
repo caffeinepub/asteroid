@@ -12,17 +12,23 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
+  Camera,
+  CheckCircle2,
   Contrast,
   Globe,
+  HelpCircle,
   Loader2,
+  MapPin,
   Mic,
   Save,
+  ShieldCheck,
   Vibrate,
   Volume2,
+  XCircle,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { AppPage } from "../App";
 import { usePreferences, useSavePreferences } from "../hooks/useQueries";
@@ -42,6 +48,14 @@ const LANGUAGES = [
   { code: "pt", label: "Portuguese" },
 ];
 
+type PermissionStatus = "granted" | "denied" | "prompt" | "unknown";
+
+interface DevicePermissions {
+  microphone: PermissionStatus;
+  camera: PermissionStatus;
+  location: PermissionStatus;
+}
+
 export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   const { data: prefs, isLoading } = usePreferences();
   const savePrefs = useSavePreferences();
@@ -53,6 +67,13 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   const [haptics, setHaptics] = useState(true);
   const [mode, setMode] = useState("Standard");
 
+  const [permissions, setPermissions] = useState<DevicePermissions>({
+    microphone: "unknown",
+    camera: "unknown",
+    location: "unknown",
+  });
+  const [permissionsLoading, setPermissionsLoading] = useState(false);
+
   useEffect(() => {
     if (prefs) {
       setWakeWord(prefs.wakeWord);
@@ -63,6 +84,49 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
       setMode(prefs.mode);
     }
   }, [prefs]);
+
+  const checkPermissions = useCallback(async () => {
+    if (!navigator.permissions) {
+      setPermissions({
+        microphone: "unknown",
+        camera: "unknown",
+        location: "unknown",
+      });
+      return;
+    }
+    setPermissionsLoading(true);
+    try {
+      const [micResult, camResult, locResult] = await Promise.all([
+        navigator.permissions
+          .query({ name: "microphone" as PermissionName })
+          .catch(() => ({ state: "unknown" as PermissionStatus })),
+        navigator.permissions
+          .query({ name: "camera" as PermissionName })
+          .catch(() => ({ state: "unknown" as PermissionStatus })),
+        navigator.permissions
+          .query({ name: "geolocation" as PermissionName })
+          .catch(() => ({ state: "unknown" as PermissionStatus })),
+      ]);
+      setPermissions({
+        microphone: (micResult.state as PermissionStatus) || "unknown",
+        camera: (camResult.state as PermissionStatus) || "unknown",
+        location: (locResult.state as PermissionStatus) || "unknown",
+      });
+    } catch {
+      setPermissions({
+        microphone: "unknown",
+        camera: "unknown",
+        location: "unknown",
+      });
+    } finally {
+      setPermissionsLoading(false);
+    }
+  }, []);
+
+  // Check permissions on mount
+  useEffect(() => {
+    checkPermissions();
+  }, [checkPermissions]);
 
   const handleSave = () => {
     savePrefs.mutate(
@@ -130,6 +194,107 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
       </div>
 
       <div className="flex flex-col gap-5">
+        {/* Device Permissions */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="rounded-xl p-6"
+          style={{
+            backgroundColor: "oklch(0.11 0.005 260)",
+            border: "1px solid oklch(0.92 0.005 260 / 15%)",
+          }}
+          aria-labelledby="permissions-heading"
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h2
+              id="permissions-heading"
+              className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" aria-hidden /> Device Permissions
+            </h2>
+            <button
+              type="button"
+              onClick={checkPermissions}
+              disabled={permissionsLoading}
+              className="text-xs px-3 py-1 rounded-lg transition-colors hover:opacity-80"
+              style={{
+                backgroundColor: "oklch(0.15 0.007 270)",
+                color: "oklch(0.76 0.009 264)",
+                border: "1px solid oklch(0.92 0.005 260 / 20%)",
+              }}
+              aria-label="Refresh permission status"
+              data-ocid="settings.button"
+            >
+              {permissionsLoading ? (
+                <Loader2 className="w-3 h-3 animate-spin" aria-hidden />
+              ) : (
+                "Refresh"
+              )}
+            </button>
+          </div>
+
+          <ul className="flex flex-col gap-4" aria-label="Permission statuses">
+            {(
+              [
+                {
+                  key: "microphone" as const,
+                  label: "Microphone",
+                  description: "Required for voice commands",
+                  icon: Mic,
+                },
+                {
+                  key: "camera" as const,
+                  label: "Camera",
+                  description: "Required for GravityMode obstacle detection",
+                  icon: Camera,
+                },
+                {
+                  key: "location" as const,
+                  label: "Location",
+                  description: "Required for EarthMode GPS navigation",
+                  icon: MapPin,
+                },
+              ] as const
+            ).map(({ key, label, description, icon: Icon }) => {
+              const status = permissions[key];
+              return (
+                <li
+                  key={key}
+                  className="flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: "oklch(0.83 0.11 195 / 15%)" }}
+                    >
+                      <Icon
+                        className="w-5 h-5"
+                        style={{ color: "oklch(0.83 0.11 195)" }}
+                        aria-hidden
+                      />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">
+                        {label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {description}
+                      </p>
+                    </div>
+                  </div>
+                  <PermissionBadge status={status} />
+                </li>
+              );
+            })}
+          </ul>
+
+          <p className="text-xs text-muted-foreground mt-4">
+            Permissions are requested when you activate a feature. Grant access
+            via your browser's address bar if denied.
+          </p>
+        </motion.section>
+
         {/* Voice Settings */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}
@@ -343,5 +508,59 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
         </div>
       )}
     </div>
+  );
+}
+
+function PermissionBadge({ status }: { status: PermissionStatus }) {
+  if (status === "granted") {
+    return (
+      <span
+        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        style={{
+          backgroundColor: "oklch(0.78 0.16 155 / 20%)",
+          color: "oklch(0.78 0.16 155)",
+          border: "1px solid oklch(0.78 0.16 155 / 40%)",
+        }}
+        aria-label="Permission granted"
+      >
+        <CheckCircle2 className="w-3.5 h-3.5" aria-hidden />
+        Granted
+      </span>
+    );
+  }
+  if (status === "denied") {
+    return (
+      <span
+        className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        style={{
+          backgroundColor: "oklch(0.62 0.22 25 / 20%)",
+          color: "oklch(0.85 0.12 25)",
+          border: "1px solid oklch(0.62 0.22 25 / 40%)",
+        }}
+        aria-label="Permission denied"
+      >
+        <XCircle className="w-3.5 h-3.5" aria-hidden />
+        Denied
+      </span>
+    );
+  }
+  // prompt or unknown
+  return (
+    <span
+      className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+      style={{
+        backgroundColor: "oklch(0.87 0.16 84 / 15%)",
+        color: "oklch(0.87 0.16 84)",
+        border: "1px solid oklch(0.87 0.16 84 / 40%)",
+      }}
+      aria-label={
+        status === "prompt"
+          ? "Permission not yet requested"
+          : "Permission status unknown"
+      }
+    >
+      <HelpCircle className="w-3.5 h-3.5" aria-hidden />
+      {status === "prompt" ? "Not asked" : "Unknown"}
+    </span>
   );
 }

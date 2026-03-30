@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Clock,
   Crosshair,
+  Loader2,
   MapPin,
   Navigation,
   Play,
@@ -13,7 +14,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppPage } from "../App";
 
 interface EarthModeProps {
@@ -46,12 +47,95 @@ export default function EarthModePage({ onNavigate }: EarthModeProps) {
   const [eta, setEta] = useState(12);
   const [currentStreet, setCurrentStreet] = useState("Main Street");
 
+  // GPS state
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const [gpsPosition, setGpsPosition] = useState<{
+    lat: number;
+    lng: number;
+    accuracy: number;
+  } | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const firstFixRef = useRef(false);
+
+  const speak = useCallback((text: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 1;
+    window.speechSynthesis.speak(utt);
+  }, []);
+
+  const stopGps = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+  }, []);
+
+  const startGps = useCallback(() => {
+    if (!navigator.geolocation) {
+      setGpsError(
+        "GPS is not supported on this device. Navigation will use simulated data.",
+      );
+      return;
+    }
+    setGpsLoading(true);
+    setGpsError(null);
+    firstFixRef.current = false;
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        setGpsPosition({ lat: latitude, lng: longitude, accuracy });
+        setGpsLoading(false);
+
+        if (!firstFixRef.current) {
+          firstFixRef.current = true;
+          speak("Location acquired. Starting navigation.");
+          navigator.vibrate?.([100, 50, 100]);
+        } else {
+          speak("Location updated.");
+        }
+      },
+      (err) => {
+        setGpsLoading(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGpsError(
+            "Location permission was denied. Please allow location access and try again.",
+          );
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGpsError(
+            "Location unavailable. Check that GPS is enabled on your device.",
+          );
+        } else if (err.code === err.TIMEOUT) {
+          setGpsError("Location request timed out. Please try again.");
+        } else {
+          setGpsError("Unable to get location. Please try again.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  }, [speak]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopGps();
+    };
+  }, [stopGps]);
+
+  // Simulated route timer
   useEffect(() => {
     if (!isNavigating) return;
     const timer = setInterval(() => {
       setDistanceToTurn((d) => {
         if (d <= 30) {
-          setRouteStep((s) => (s + 1) % ROUTE_UPDATES.length);
+          setRouteStep((s) => {
+            const next = (s + 1) % ROUTE_UPDATES.length;
+            speak(ROUTE_UPDATES[next]);
+            return next;
+          });
           setCurrentStreet((s) =>
             s === "Main Street" ? "Oak Avenue" : "Main Street",
           );
@@ -62,22 +146,28 @@ export default function EarthModePage({ onNavigate }: EarthModeProps) {
       setEta((e) => Math.max(0, e - 0.1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [isNavigating]);
+  }, [isNavigating, speak]);
 
-  const handleStart = () => {
+  const handleStart = useCallback(() => {
     if (!destination.trim()) return;
     setActiveDestination(destination);
     setIsNavigating(true);
     setRouteStep(0);
     setDistanceToTurn(350);
     setEta(12);
-  };
+    startGps();
+    speak(`Starting navigation to ${destination}.`);
+  }, [destination, startGps, speak]);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     setIsNavigating(false);
     setDistanceToTurn(350);
     setEta(12);
-  };
+    stopGps();
+    setGpsPosition(null);
+    setGpsLoading(false);
+    speak("Navigation stopped.");
+  }, [stopGps, speak]);
 
   return (
     <div
@@ -119,6 +209,90 @@ export default function EarthModePage({ onNavigate }: EarthModeProps) {
             </p>
           </div>
         </div>
+
+        {/* GPS status panel — always visible when navigating */}
+        {isNavigating && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-xl p-4 mb-5 flex items-center gap-3"
+            style={{
+              backgroundColor: gpsError
+                ? "oklch(0.12 0.04 25)"
+                : gpsLoading
+                  ? "oklch(0.12 0.04 261)"
+                  : "oklch(0.10 0.04 155)",
+              border: `1px solid ${
+                gpsError
+                  ? "oklch(0.62 0.22 25 / 50%)"
+                  : gpsLoading
+                    ? "oklch(0.52 0.22 261 / 40%)"
+                    : "oklch(0.78 0.16 155 / 40%)"
+              }`,
+            }}
+            aria-live="polite"
+            data-ocid="earth.panel"
+          >
+            {gpsLoading && (
+              <>
+                <Loader2
+                  className="w-5 h-5 animate-spin flex-shrink-0"
+                  style={{ color: "oklch(0.52 0.22 261)" }}
+                  aria-hidden
+                />
+                <p
+                  className="text-sm"
+                  style={{ color: "oklch(0.52 0.22 261)" }}
+                  data-ocid="earth.loading_state"
+                >
+                  Acquiring GPS signal…
+                </p>
+              </>
+            )}
+            {gpsError && (
+              <>
+                <MapPin
+                  className="w-5 h-5 flex-shrink-0"
+                  style={{ color: "oklch(0.62 0.22 25)" }}
+                  aria-hidden
+                />
+                <p
+                  className="text-sm"
+                  style={{ color: "oklch(0.85 0.12 25)" }}
+                  data-ocid="earth.error_state"
+                >
+                  {gpsError}
+                </p>
+              </>
+            )}
+            {gpsPosition && !gpsError && !gpsLoading && (
+              <>
+                <Crosshair
+                  className="w-5 h-5 flex-shrink-0"
+                  style={{ color: "oklch(0.78 0.16 155)" }}
+                  aria-hidden
+                />
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "oklch(0.78 0.16 155)" }}
+                  >
+                    GPS Active
+                  </p>
+                  <p className="text-xs text-muted-foreground font-mono truncate">
+                    {gpsPosition.lat.toFixed(5)}, {gpsPosition.lng.toFixed(5)}
+                    &nbsp;·&nbsp;±{Math.round(gpsPosition.accuracy)}m
+                  </p>
+                </div>
+                <span
+                  className="w-2 h-2 rounded-full animate-pulse flex-shrink-0"
+                  style={{ backgroundColor: "oklch(0.78 0.16 155)" }}
+                  aria-hidden
+                />
+              </>
+            )}
+          </motion.div>
+        )}
 
         {!isNavigating && (
           <motion.div

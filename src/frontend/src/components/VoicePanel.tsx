@@ -107,8 +107,19 @@ export default function VoicePanel({
     },
   ]);
   const [isListening, setIsListening] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
   const [inputText, setInputText] = useState("");
+  const [micError, setMicError] = useState<string | null>(null);
+  const [speechSupported] = useState(
+    () =>
+      !!(
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition
+      ),
+  );
   const bottomRef = useRef<HTMLDivElement>(null);
+  // biome-ignore lint/suspicious/noExplicitAny: SpeechRecognition types vary across browsers
+  const recognitionRef = useRef<any>(null);
   const addVoiceLog = useAddVoiceLog();
   const addTask = useAddTask();
 
@@ -116,18 +127,35 @@ export default function VoicePanel({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   });
 
+  // Cleanup recognition on unmount
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.abort();
+    };
+  }, []);
+
+  const speak = useCallback((text: string) => {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.rate = 1;
+    window.speechSynthesis.speak(utt);
+  }, []);
+
   const processInput = useCallback(
     (input: string) => {
+      const trimmed = input.trim();
+      if (!trimmed) return;
       const userMsg: Message = {
         role: "user",
-        text: input,
+        text: trimmed,
         time: getTime(),
         id: `u-${Date.now()}`,
       };
       setMessages((prev) => [...prev, userMsg]);
 
       setTimeout(() => {
-        const response = generateResponse(input, onNavigate, (task) =>
+        const response = generateResponse(trimmed, onNavigate, (task) =>
           addTask.mutate(task),
         );
         const asteroidMsg: Message = {
@@ -137,31 +165,98 @@ export default function VoicePanel({
           id: `a-${Date.now()}`,
         };
         setMessages((prev) => [...prev, asteroidMsg]);
+        speak(response);
 
         addVoiceLog.mutate({
-          userInput: input,
+          userInput: trimmed,
           assistantResponse: response,
           timestamp: BigInt(Date.now()),
         });
-      }, 800);
+      }, 400);
     },
-    [onNavigate, addTask, addVoiceLog],
+    [onNavigate, addTask, addVoiceLog, speak],
   );
 
-  const handleVoiceHold = () => setIsListening(true);
+  const startListening = useCallback(() => {
+    if (!speechSupported) {
+      setMicError(
+        "Speech recognition is not supported in this browser. Try Chrome or Edge.",
+      );
+      return;
+    }
+    setMicError(null);
+    setInterimTranscript("");
+
+    // Haptic feedback when recording starts
+    if (navigator.vibrate) navigator.vibrate(100);
+
+    const SpeechRecognitionAPI =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => setIsListening(true);
+
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      let final = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          final += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
+      setInterimTranscript(interim);
+      if (final) {
+        setInterimTranscript("");
+        processInput(final);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      setInterimTranscript("");
+      if (
+        event.error === "not-allowed" ||
+        event.error === "permission-denied"
+      ) {
+        setMicError(
+          "Microphone access was denied. Please allow microphone permission and try again.",
+        );
+      } else if (event.error === "no-speech") {
+        setMicError("No speech detected. Please try again.");
+      } else {
+        setMicError(`Microphone error: ${event.error}. Please try again.`);
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setInterimTranscript("");
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, [speechSupported, processInput]);
+
+  const stopListening = useCallback(() => {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    setIsListening(false);
+    setInterimTranscript("");
+  }, []);
+
+  const handleVoiceHold = () => {
+    if (!isListening) startListening();
+  };
 
   const handleVoiceRelease = () => {
-    if (!isListening) return;
-    setIsListening(false);
-    const simulatedInputs = [
-      "Show my tasks",
-      "What time is it?",
-      "Add task buy groceries",
-      "Start GravityMode",
-    ];
-    const input =
-      simulatedInputs[Math.floor(Math.random() * simulatedInputs.length)];
-    processInput(input);
+    if (isListening) stopListening();
   };
 
   const handleTextSubmit = (e: React.FormEvent) => {
@@ -211,7 +306,7 @@ export default function VoicePanel({
                     Asteroid
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    Voice Assistant
+                    {isListening ? "Listening..." : "Voice Assistant"}
                   </p>
                 </div>
               </div>
@@ -251,14 +346,46 @@ export default function VoicePanel({
                   </div>
                 </div>
               ))}
+              {/* Interim transcript bubble */}
+              {interimTranscript && (
+                <div className="flex justify-end">
+                  <div
+                    className="max-w-[80%] rounded-xl px-4 py-2.5 opacity-60"
+                    style={{
+                      backgroundColor: "oklch(0.83 0.11 195)",
+                      color: "oklch(0.08 0.002 286)",
+                      border: "1px dashed oklch(0.83 0.11 195)",
+                    }}
+                  >
+                    <p className="text-sm italic">{interimTranscript}…</p>
+                  </div>
+                </div>
+              )}
               <div ref={bottomRef} />
             </div>
+
+            {/* Error region */}
+            {micError && (
+              <div
+                role="alert"
+                aria-live="assertive"
+                className="mx-5 mb-2 px-4 py-3 rounded-lg text-sm"
+                style={{
+                  backgroundColor: "oklch(0.18 0.05 25)",
+                  color: "oklch(0.85 0.12 25)",
+                  border: "1px solid oklch(0.62 0.22 25 / 50%)",
+                }}
+                data-ocid="voice.error_state"
+              >
+                ⚠ {micError}
+              </div>
+            )}
 
             <div
               className="px-5 py-4 flex flex-col gap-3"
               style={{ borderTop: "1px solid oklch(0.92 0.005 260 / 12%)" }}
             >
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-2">
                 <button
                   type="button"
                   onMouseDown={handleVoiceHold}
@@ -279,10 +406,13 @@ export default function VoicePanel({
                   }}
                   aria-label={
                     isListening
-                      ? "Release to send voice message"
-                      : "Hold to speak"
+                      ? "Release to stop listening"
+                      : speechSupported
+                        ? "Hold to speak"
+                        : "Speech not supported"
                   }
                   aria-pressed={isListening}
+                  disabled={!speechSupported}
                   data-ocid="voice.primary_button"
                 >
                   {isListening ? (
@@ -303,6 +433,20 @@ export default function VoicePanel({
                     <MicOff className="w-6 h-6 text-cyan" />
                   )}
                 </button>
+                {!speechSupported && (
+                  <p className="text-xs text-muted-foreground text-center">
+                    Speech recognition not supported — use text input below
+                  </p>
+                )}
+                {isListening && (
+                  <p
+                    className="text-xs animate-pulse"
+                    style={{ color: "oklch(0.83 0.11 195)" }}
+                    aria-live="polite"
+                  >
+                    Listening… release to stop
+                  </p>
+                )}
               </div>
 
               <form onSubmit={handleTextSubmit} className="flex gap-2">
