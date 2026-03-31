@@ -1,16 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Preferences, Task, VoiceLog } from "../backend.d";
+import type { Preferences, Task, TaskWithId, VoiceLog } from "../backend.d";
 import { useActor } from "./useActor";
 import { useInternetIdentity } from "./useInternetIdentity";
 
 export function useAllTasks() {
   const { actor, isFetching } = useActor();
-  return useQuery<Array<Task & { id: bigint }>>({
+  return useQuery<Array<TaskWithId>>({
     queryKey: ["tasks"],
     queryFn: async () => {
       if (!actor) return [];
-      const tasks = await actor.getAllTasks();
-      return tasks.map((t, i) => ({ ...t, id: BigInt(i) }));
+      return actor.getAllTasks();
     },
     enabled: !!actor && !isFetching,
   });

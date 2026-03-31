@@ -25,10 +25,33 @@ export interface Task {
   'description' : string,
   'category' : string,
 }
+export interface TaskWithId {
+  'id' : bigint,
+  'title' : string,
+  'completed' : boolean,
+  'dueDate' : bigint,
+  'description' : string,
+  'category' : string,
+}
+export interface TransformationInput {
+  'context' : Uint8Array,
+  'response' : http_request_result,
+}
+export interface TransformationOutput {
+  'status' : bigint,
+  'body' : Uint8Array,
+  'headers' : Array<http_header>,
+}
 export interface VoiceLog {
   'userInput' : string,
   'assistantResponse' : string,
   'timestamp' : bigint,
+}
+export interface http_header { 'value' : string, 'name' : string }
+export interface http_request_result {
+  'status' : bigint,
+  'body' : Uint8Array,
+  'headers' : Array<http_header>,
 }
 export interface _SERVICE {
   /**
@@ -37,15 +60,23 @@ export interface _SERVICE {
    */
   'addTask' : ActorMethod<[Task], bigint>,
   'addVoiceLog' : ActorMethod<[VoiceLog], undefined>,
+  'chatWithAI' : ActorMethod<[string], string>,
   'completeTask' : ActorMethod<[bigint], undefined>,
   'deleteTask' : ActorMethod<[bigint], undefined>,
-  'getAllTasks' : ActorMethod<[], Array<Task>>,
+  'getAllTasks' : ActorMethod<[], Array<TaskWithId>>,
   'getPreferences' : ActorMethod<[Principal], Preferences>,
-  'getTask' : ActorMethod<[bigint], Task>,
-  'getTasksByCategory' : ActorMethod<[string], Array<Task>>,
-  'getTasksByCompletion' : ActorMethod<[boolean], Array<Task>>,
+  'getTask' : ActorMethod<[bigint], TaskWithId>,
+  'getTasksByCategory' : ActorMethod<[string], Array<TaskWithId>>,
+  'getTasksByCompletion' : ActorMethod<[boolean], Array<TaskWithId>>,
   'getVoiceLogs' : ActorMethod<[Principal], Array<VoiceLog>>,
+  'hasOpenAIKey' : ActorMethod<[], boolean>,
+  /**
+   * / ***********
+   * / ***********
+   */
+  'setOpenAIKey' : ActorMethod<[string], undefined>,
   'setPreferences' : ActorMethod<[Preferences], undefined>,
+  'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
   'updateTask' : ActorMethod<[bigint, Task], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;

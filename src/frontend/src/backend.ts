@@ -89,7 +89,32 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface TransformationOutput {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
+}
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
+}
+export interface Preferences {
+    mode: string;
+    speechRate: bigint;
+    haptics: boolean;
+    language: string;
+    wakeWord: string;
+    highContrast: boolean;
+}
 export interface Task {
+    title: string;
+    completed: boolean;
+    dueDate: bigint;
+    description: string;
+    category: string;
+}
+export interface TaskWithId {
+    id: bigint;
     title: string;
     completed: boolean;
     dueDate: bigint;
@@ -101,13 +126,14 @@ export interface VoiceLog {
     assistantResponse: string;
     timestamp: bigint;
 }
-export interface Preferences {
-    mode: string;
-    speechRate: bigint;
-    haptics: boolean;
-    language: string;
-    wakeWord: string;
-    highContrast: boolean;
+export interface http_header {
+    value: string;
+    name: string;
+}
+export interface http_request_result {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<http_header>;
 }
 export interface backendInterface {
     /**
@@ -116,15 +142,23 @@ export interface backendInterface {
      */
     addTask(task: Task): Promise<bigint>;
     addVoiceLog(log: VoiceLog): Promise<void>;
+    chatWithAI(message: string): Promise<string>;
     completeTask(taskId: bigint): Promise<void>;
     deleteTask(taskId: bigint): Promise<void>;
-    getAllTasks(): Promise<Array<Task>>;
+    getAllTasks(): Promise<Array<TaskWithId>>;
     getPreferences(user: Principal): Promise<Preferences>;
-    getTask(taskId: bigint): Promise<Task>;
-    getTasksByCategory(category: string): Promise<Array<Task>>;
-    getTasksByCompletion(completed: boolean): Promise<Array<Task>>;
+    getTask(taskId: bigint): Promise<TaskWithId>;
+    getTasksByCategory(category: string): Promise<Array<TaskWithId>>;
+    getTasksByCompletion(completed: boolean): Promise<Array<TaskWithId>>;
     getVoiceLogs(user: Principal): Promise<Array<VoiceLog>>;
+    hasOpenAIKey(): Promise<boolean>;
+    /**
+     * / ***********
+     * / ***********
+     */
+    setOpenAIKey(key: string): Promise<void>;
     setPreferences(prefs: Preferences): Promise<void>;
+    transform(input: TransformationInput): Promise<TransformationOutput>;
     updateTask(taskId: bigint, task: Task): Promise<void>;
 }
 export class Backend implements backendInterface {
@@ -157,6 +191,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async chatWithAI(arg0: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.chatWithAI(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.chatWithAI(arg0);
+            return result;
+        }
+    }
     async completeTask(arg0: bigint): Promise<void> {
         if (this.processError) {
             try {
@@ -185,7 +233,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getAllTasks(): Promise<Array<Task>> {
+    async getAllTasks(): Promise<Array<TaskWithId>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllTasks();
@@ -213,7 +261,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getTask(arg0: bigint): Promise<Task> {
+    async getTask(arg0: bigint): Promise<TaskWithId> {
         if (this.processError) {
             try {
                 const result = await this.actor.getTask(arg0);
@@ -227,7 +275,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getTasksByCategory(arg0: string): Promise<Array<Task>> {
+    async getTasksByCategory(arg0: string): Promise<Array<TaskWithId>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getTasksByCategory(arg0);
@@ -241,7 +289,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getTasksByCompletion(arg0: boolean): Promise<Array<Task>> {
+    async getTasksByCompletion(arg0: boolean): Promise<Array<TaskWithId>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getTasksByCompletion(arg0);
@@ -269,6 +317,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async hasOpenAIKey(): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.hasOpenAIKey();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.hasOpenAIKey();
+            return result;
+        }
+    }
+    async setOpenAIKey(arg0: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setOpenAIKey(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setOpenAIKey(arg0);
+            return result;
+        }
+    }
     async setPreferences(arg0: Preferences): Promise<void> {
         if (this.processError) {
             try {
@@ -280,6 +356,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.setPreferences(arg0);
+            return result;
+        }
+    }
+    async transform(arg0: TransformationInput): Promise<TransformationOutput> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.transform(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.transform(arg0);
             return result;
         }
     }

@@ -2,8 +2,13 @@ import Principal "mo:core/Principal";
 import Map "mo:core/Map";
 import Runtime "mo:core/Runtime";
 import Order "mo:core/Order";
-import Text "mo:core/Text";
+import Iter "mo:core/Iter";
+import Nat "mo:core/Nat";
+import Int "mo:core/Int";
 import Array "mo:core/Array";
+import OutCall "http-outcalls/outcall";
+
+
 
 actor {
   /**************/
@@ -18,13 +23,31 @@ actor {
     completed : Bool;
   };
 
-  module Task {
-    public func compare(task1 : Task, task2 : Task) : Order.Order {
-      switch (task1.completed, task2.completed) {
-        case (true, false) { return #greater };
-        case (false, true) { return #less };
-        case (_, _) { Int.compare(task1.dueDate, task2.dueDate) };
-      };
+  type TaskWithId = {
+    id : Nat;
+    title : Text;
+    description : Text;
+    category : Text;
+    dueDate : Int;
+    completed : Bool;
+  };
+
+  func toTaskWithId(id : Nat, task : Task) : TaskWithId {
+    {
+      id = id;
+      title = task.title;
+      description = task.description;
+      category = task.category;
+      dueDate = task.dueDate;
+      completed = task.completed;
+    }
+  };
+
+  func compareTaskWithId(t1 : TaskWithId, t2 : TaskWithId) : Order.Order {
+    switch (t1.completed, t2.completed) {
+      case (true, false) { #greater };
+      case (false, true) { #less };
+      case (_, _) { Int.compare(t1.dueDate, t2.dueDate) };
     };
   };
 
@@ -33,7 +56,7 @@ actor {
     language : Text;
     highContrast : Bool;
     haptics : Bool;
-    mode : Text; // "standard", "gravity", "earth"
+    mode : Text;
     wakeWord : Text;
   };
 
@@ -77,23 +100,25 @@ actor {
 
   let voiceLogs = Map.empty<Principal, [VoiceLog]>();
 
+  var openaiKey : ?Text = null;
+
   /**************/
   /* OPERATIONS */
   /**************/
 
-  public shared ({ caller }) func addTask(task : Task) : async Nat {
+  public shared func addTask(task : Task) : async Nat {
     let taskId = nextTaskId;
     tasks.add(taskId, task);
     nextTaskId += 1;
     taskId;
   };
 
-  public shared ({ caller }) func updateTask(taskId : Nat, task : Task) : async () {
+  public shared func updateTask(taskId : Nat, task : Task) : async () {
     if (not tasks.containsKey(taskId)) { Runtime.trap("Task not found") };
     tasks.add(taskId, task);
   };
 
-  public shared ({ caller }) func completeTask(taskId : Nat) : async () {
+  public shared func completeTask(taskId : Nat) : async () {
     switch (tasks.get(taskId)) {
       case (null) { Runtime.trap("Task not found") };
       case (?task) {
@@ -108,30 +133,50 @@ actor {
     };
   };
 
-  public shared ({ caller }) func deleteTask(taskId : Nat) : async () {
+  public shared func deleteTask(taskId : Nat) : async () {
     if (not tasks.containsKey(taskId)) { Runtime.trap("Task not found") };
     tasks.remove(taskId);
   };
 
-  public query ({ caller }) func getAllTasks() : async [Task] {
-    tasks.values().toArray().sort();
+  public query func getAllTasks() : async [TaskWithId] {
+    let entries = tasks.entries().map(func (kv : (Nat, Task)) : TaskWithId {
+      toTaskWithId(kv.0, kv.1)
+    }).toArray();
+    entries.sort(compareTaskWithId)
   };
 
-  public query ({ caller }) func getTasksByCategory(category : Text) : async [Task] {
-    tasks.values().toArray().filter(func(task) { task.category == category }).sort();
+  public query func getTasksByCategory(category : Text) : async [TaskWithId] {
+    let entries = tasks.entries()
+      .filter(func (kv : (Nat, Task)) : Bool { kv.1.category == category })
+      .map(func (kv : (Nat, Task)) : TaskWithId { toTaskWithId(kv.0, kv.1) })
+      .toArray();
+    entries.sort(compareTaskWithId)
   };
 
-  public query ({ caller }) func getTasksByCompletion(completed : Bool) : async [Task] {
-    tasks.values().toArray().filter(func(task) { task.completed == completed }).sort();
+  public query func getTasksByCompletion(completed : Bool) : async [TaskWithId] {
+    let entries = tasks.entries()
+      .filter(func (kv : (Nat, Task)) : Bool { kv.1.completed == completed })
+      .map(func (kv : (Nat, Task)) : TaskWithId { toTaskWithId(kv.0, kv.1) })
+      .toArray();
+    entries.sort(compareTaskWithId)
   };
 
   public shared ({ caller }) func setPreferences(prefs : Preferences) : async () {
     preferences.add(caller, prefs);
   };
 
-  public query ({ caller }) func getPreferences(user : Principal) : async Preferences {
+  public query func getPreferences(user : Principal) : async Preferences {
     switch (preferences.get(user)) {
-      case (null) { Runtime.trap("Preferences not found") };
+      case (null) {
+        {
+          speechRate = 5;
+          language = "en";
+          highContrast = false;
+          haptics = true;
+          mode = "Standard";
+          wakeWord = "Hey Asteroid";
+        }
+      };
       case (?prefs) { prefs };
     };
   };
@@ -143,24 +188,78 @@ actor {
     };
     let newLogs = [log].concat(userLogs);
     let trimmedLogs = if (newLogs.size() > 10) {
-      newLogs.sliceToArray(0, 10);
+      Array.tabulate(10, func(i : Nat) : VoiceLog { newLogs[i] })
     } else {
-      newLogs;
+      newLogs
     };
     voiceLogs.add(caller, trimmedLogs);
   };
 
-  public query ({ caller }) func getVoiceLogs(user : Principal) : async [VoiceLog] {
+  public query func getVoiceLogs(user : Principal) : async [VoiceLog] {
     switch (voiceLogs.get(user)) {
       case (null) { [] };
       case (?logs) { logs };
     };
   };
 
-  public query ({ caller }) func getTask(taskId : Nat) : async Task {
+  /**************/
+  /* AI Features */
+  /**************/
+
+  public shared func setOpenAIKey(key : Text) : async () {
+    openaiKey := ?key;
+  };
+
+  public query func hasOpenAIKey() : async Bool {
+    switch (openaiKey) {
+      case (?key) { key.size() > 0 };
+      case (null) { false };
+    };
+  };
+
+  public query func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
+    OutCall.transform(input);
+  };
+
+  public shared func chatWithAI(message : Text) : async Text {
+    switch (openaiKey) {
+      case (null) {
+        "OpenAI API key not set. Please provide a valid API key.";
+      };
+      case (?key) {
+        let headers = [
+          {
+            name = "Authorization";
+            value = "Bearer " # key;
+          },
+          {
+            name = "Content-Type";
+            value = "application/json";
+          },
+        ];
+        let systemPrompt = "You are Asteroid, a helpful virtual assistant for managing daily tasks, navigation, and accessibility. Be concise and friendly.";
+        let body = (
+          "{ \"model\": \"gpt-4o-mini\", " #
+          "\"messages\": [" #
+          "{\"role\":\"system\",\"content\":\""
+        ) # systemPrompt #
+        ("\"}," #
+        "{\"role\":\"user\",\"content\":\"" # message # "\"}], \"max_tokens\": 300 }");
+        let result = await OutCall.httpPostRequest(
+          "https://api.openai.com/v1/chat/completions",
+          headers,
+          body,
+          transform,
+        );
+        result;
+      };
+    };
+  };
+
+  public query func getTask(taskId : Nat) : async TaskWithId {
     switch (tasks.get(taskId)) {
       case (null) { Runtime.trap("Task not found") };
-      case (?task) { task };
+      case (?task) { toTaskWithId(taskId, task) };
     };
   };
 };

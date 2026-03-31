@@ -12,11 +12,13 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import {
   ArrowLeft,
+  Bot,
   Camera,
   CheckCircle2,
   Contrast,
   Globe,
   HelpCircle,
+  Key,
   Loader2,
   MapPin,
   Mic,
@@ -31,6 +33,7 @@ import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { AppPage } from "../App";
+import { useAI } from "../hooks/useAI";
 import { usePreferences, useSavePreferences } from "../hooks/useQueries";
 
 interface SettingsPageProps {
@@ -59,6 +62,7 @@ interface DevicePermissions {
 export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   const { data: prefs, isLoading } = usePreferences();
   const savePrefs = useSavePreferences();
+  const { checkAIConfigured } = useAI();
 
   const [wakeWord, setWakeWord] = useState("Hey Asteroid");
   const [speechRate, setSpeechRate] = useState(5);
@@ -73,6 +77,8 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
     location: "unknown",
   });
   const [permissionsLoading, setPermissionsLoading] = useState(false);
+  const [aiConfigured, setAiConfigured] = useState(false);
+  const [aiChecking, setAiChecking] = useState(true);
 
   useEffect(() => {
     if (prefs) {
@@ -84,6 +90,20 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
       setMode(prefs.mode);
     }
   }, [prefs]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAiChecking(true);
+    checkAIConfigured().then((configured) => {
+      if (!cancelled) {
+        setAiConfigured(configured);
+        setAiChecking(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [checkAIConfigured]);
 
   const checkPermissions = useCallback(async () => {
     if (!navigator.permissions) {
@@ -194,6 +214,96 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
       </div>
 
       <div className="flex flex-col gap-5">
+        {/* AI Assistant */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0 }}
+          className="rounded-xl p-6"
+          style={{
+            backgroundColor: "oklch(0.11 0.005 260)",
+            border: "1px solid oklch(0.92 0.005 260 / 15%)",
+          }}
+          aria-labelledby="ai-heading"
+        >
+          <div className="flex items-center justify-between mb-5">
+            <h2
+              id="ai-heading"
+              className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground flex items-center gap-2"
+            >
+              <Bot className="w-4 h-4" aria-hidden /> AI Assistant
+            </h2>
+            {aiChecking ? (
+              <span
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: "oklch(0.15 0.005 264)",
+                  color: "oklch(0.55 0.009 264)",
+                  border: "1px solid oklch(0.92 0.005 260 / 20%)",
+                }}
+                data-ocid="settings.loading_state"
+              >
+                <Loader2 className="w-3 h-3 animate-spin" aria-hidden />
+                Checking...
+              </span>
+            ) : aiConfigured ? (
+              <span
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: "oklch(0.78 0.16 155 / 20%)",
+                  color: "oklch(0.78 0.16 155)",
+                  border: "1px solid oklch(0.78 0.16 155 / 40%)",
+                }}
+                data-ocid="settings.success_state"
+              >
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: "oklch(0.78 0.16 155)" }}
+                />
+                Connected
+              </span>
+            ) : (
+              <span
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+                style={{
+                  backgroundColor: "oklch(0.87 0.16 84 / 15%)",
+                  color: "oklch(0.87 0.16 84)",
+                  border: "1px solid oklch(0.87 0.16 84 / 40%)",
+                }}
+                data-ocid="settings.error_state"
+              >
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: "oklch(0.87 0.16 84)" }}
+                />
+                Not configured
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground mb-5">
+            {aiConfigured
+              ? "AI assistant is active. GPT-4o mini is ready to answer your questions."
+              : "Contact the app administrator to set up the AI key."}
+          </p>
+
+          {/* Setup API Key button */}
+          <Button
+            variant="outline"
+            onClick={() => onNavigate("admin")}
+            className="flex items-center gap-2 text-sm font-semibold min-h-[44px]"
+            style={{
+              backgroundColor: "oklch(0.15 0.007 270)",
+              color: "oklch(0.83 0.11 195)",
+              border: "1px solid oklch(0.83 0.11 195 / 40%)",
+            }}
+            aria-label="Setup API key for AI assistant"
+            data-ocid="settings.open_modal_button"
+          >
+            <Key className="w-4 h-4" aria-hidden />
+            Setup API Key
+          </Button>
+        </motion.section>
+
         {/* Device Permissions */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}

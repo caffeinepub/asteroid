@@ -1,7 +1,8 @@
-import { Mic, MicOff, X } from "lucide-react";
+import { Loader2, Mic, MicOff, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AppPage } from "../App";
+import { useAI } from "../hooks/useAI";
 import { useAddTask, useAddVoiceLog } from "../hooks/useQueries";
 
 interface Message {
@@ -9,12 +10,13 @@ interface Message {
   text: string;
   time: string;
   id: string;
+  loading?: boolean;
 }
 
 const getTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-function generateResponse(
+function handleLocalCommand(
   input: string,
   onNavigate: (page: AppPage) => void,
   addTask: (task: {
@@ -24,7 +26,7 @@ function generateResponse(
     dueDate: bigint;
     description: string;
   }) => void,
-): string {
+): string | null {
   const lower = input.toLowerCase();
   if (
     lower.includes("add task") ||
@@ -71,20 +73,7 @@ function generateResponse(
     setTimeout(() => onNavigate("settings"), 500);
     return "Opening your settings. You can configure wake word, speech rate, and accessibility options there.";
   }
-  if (
-    lower.includes("hello") ||
-    lower.includes("hi") ||
-    lower.includes("hey")
-  ) {
-    return "Hello! I'm Asteroid, your smart assistant. How can I help you today?";
-  }
-  if (lower.includes("time") || lower.includes("what time")) {
-    return `It's currently ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
-  }
-  if (lower.includes("weather")) {
-    return "I'd need location access to fetch current weather. You can enable this in Settings under Location Services.";
-  }
-  return `I heard "${input}". Try "add task", "show tasks", "start GravityMode", or "navigate to [place]".`;
+  return null;
 }
 
 interface VoicePanelProps {
@@ -98,6 +87,7 @@ export default function VoicePanel({
   onClose,
   onNavigate,
 }: VoicePanelProps) {
+  const { sendMessage, checkAIConfigured } = useAI();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "asteroid",
@@ -110,6 +100,8 @@ export default function VoicePanel({
   const [interimTranscript, setInterimTranscript] = useState("");
   const [inputText, setInputText] = useState("");
   const [micError, setMicError] = useState<string | null>(null);
+  const [isThinking, setIsThinking] = useState(false);
+  const [aiConfigured, setAiConfigured] = useState(false);
   const [speechSupported] = useState(
     () =>
       !!(
@@ -118,16 +110,25 @@ export default function VoicePanel({
       ),
   );
   const bottomRef = useRef<HTMLDivElement>(null);
-  // biome-ignore lint/suspicious/noExplicitAny: SpeechRecognition types vary across browsers
   const recognitionRef = useRef<any>(null);
   const addVoiceLog = useAddVoiceLog();
   const addTask = useAddTask();
+
+  // Check AI configuration status on mount
+  useEffect(() => {
+    let cancelled = false;
+    checkAIConfigured().then((configured) => {
+      if (!cancelled) setAiConfigured(configured);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [checkAIConfigured]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   });
 
-  // Cleanup recognition on unmount
   useEffect(() => {
     return () => {
       recognitionRef.current?.abort();
@@ -143,9 +144,10 @@ export default function VoicePanel({
   }, []);
 
   const processInput = useCallback(
-    (input: string) => {
+    async (input: string) => {
       const trimmed = input.trim();
       if (!trimmed) return;
+
       const userMsg: Message = {
         role: "user",
         text: trimmed,
@@ -154,10 +156,46 @@ export default function VoicePanel({
       };
       setMessages((prev) => [...prev, userMsg]);
 
-      setTimeout(() => {
-        const response = generateResponse(trimmed, onNavigate, (task) =>
-          addTask.mutate(task),
-        );
+      // Check for local navigation/task commands first
+      const localResp = handleLocalCommand(trimmed, onNavigate, (task) =>
+        addTask.mutate(task),
+      );
+
+      if (localResp) {
+        const asteroidMsg: Message = {
+          role: "asteroid",
+          text: localResp,
+          time: getTime(),
+          id: `a-${Date.now()}`,
+        };
+        setMessages((prev) => [...prev, asteroidMsg]);
+        speak(localResp);
+        addVoiceLog.mutate({
+          userInput: trimmed,
+          assistantResponse: localResp,
+          timestamp: BigInt(Date.now()),
+        });
+        return;
+      }
+
+      // Try AI via backend proxy
+      if (!aiConfigured) {
+        const noKeyMsg =
+          "AI assistant is not set up yet. Please contact the administrator.";
+        const asteroidMsg: Message = {
+          role: "asteroid",
+          text: noKeyMsg,
+          time: getTime(),
+          id: `a-${Date.now()}`,
+        };
+        setMessages((prev) => [...prev, asteroidMsg]);
+        speak(noKeyMsg);
+        return;
+      }
+
+      setIsThinking(true);
+      try {
+        const response = await sendMessage(trimmed);
         const asteroidMsg: Message = {
           role: "asteroid",
           text: response,
@@ -166,15 +204,28 @@ export default function VoicePanel({
         };
         setMessages((prev) => [...prev, asteroidMsg]);
         speak(response);
-
         addVoiceLog.mutate({
           userInput: trimmed,
           assistantResponse: response,
           timestamp: BigInt(Date.now()),
         });
-      }, 400);
+      } catch (err: any) {
+        const errText = `Sorry, I ran into an error: ${
+          err?.message ?? "Unknown error"
+        }. Please try again.`;
+        const asteroidMsg: Message = {
+          role: "asteroid",
+          text: errText,
+          time: getTime(),
+          id: `a-${Date.now()}`,
+        };
+        setMessages((prev) => [...prev, asteroidMsg]);
+        speak(errText);
+      } finally {
+        setIsThinking(false);
+      }
     },
-    [onNavigate, addTask, addVoiceLog, speak],
+    [onNavigate, addTask, addVoiceLog, speak, aiConfigured, sendMessage],
   );
 
   const startListening = useCallback(() => {
@@ -187,7 +238,6 @@ export default function VoicePanel({
     setMicError(null);
     setInterimTranscript("");
 
-    // Haptic feedback when recording starts
     if (navigator.vibrate) navigator.vibrate(100);
 
     const SpeechRecognitionAPI =
@@ -306,7 +356,13 @@ export default function VoicePanel({
                     Asteroid
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {isListening ? "Listening..." : "Voice Assistant"}
+                    {isListening
+                      ? "Listening..."
+                      : isThinking
+                        ? "Thinking..."
+                        : aiConfigured
+                          ? "AI Connected"
+                          : "Voice Assistant"}
                   </p>
                 </div>
               </div>
@@ -325,7 +381,9 @@ export default function VoicePanel({
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
+                  }`}
                 >
                   <div
                     className="max-w-[80%] rounded-xl px-4 py-2.5"
@@ -346,6 +404,23 @@ export default function VoicePanel({
                   </div>
                 </div>
               ))}
+              {/* Thinking indicator */}
+              {isThinking && (
+                <div className="flex justify-start">
+                  <div
+                    className="rounded-xl px-4 py-2.5 flex items-center gap-2"
+                    style={{
+                      backgroundColor: "oklch(0.15 0.007 270)",
+                      border: "1px solid oklch(0.92 0.005 260 / 15%)",
+                    }}
+                    aria-live="polite"
+                    data-ocid="voice.loading_state"
+                  >
+                    <Loader2 className="w-3 h-3 animate-spin text-cyan" />
+                    <p className="text-sm text-muted-foreground">Thinking...</p>
+                  </div>
+                </div>
+              )}
               {/* Interim transcript bubble */}
               {interimTranscript && (
                 <div className="flex justify-end">
@@ -357,7 +432,7 @@ export default function VoicePanel({
                       border: "1px dashed oklch(0.83 0.11 195)",
                     }}
                   >
-                    <p className="text-sm italic">{interimTranscript}…</p>
+                    <p className="text-sm italic">{interimTranscript}\u2026</p>
                   </div>
                 </div>
               )}
@@ -377,7 +452,7 @@ export default function VoicePanel({
                 }}
                 data-ocid="voice.error_state"
               >
-                ⚠ {micError}
+                \u26a0 {micError}
               </div>
             )}
 
@@ -412,7 +487,7 @@ export default function VoicePanel({
                         : "Speech not supported"
                   }
                   aria-pressed={isListening}
-                  disabled={!speechSupported}
+                  disabled={!speechSupported || isThinking}
                   data-ocid="voice.primary_button"
                 >
                   {isListening ? (
@@ -429,6 +504,8 @@ export default function VoicePanel({
                         />
                       ))}
                     </div>
+                  ) : isThinking ? (
+                    <Loader2 className="w-6 h-6 text-cyan animate-spin" />
                   ) : (
                     <MicOff className="w-6 h-6 text-cyan" />
                   )}
@@ -444,7 +521,7 @@ export default function VoicePanel({
                     style={{ color: "oklch(0.83 0.11 195)" }}
                     aria-live="polite"
                   >
-                    Listening… release to stop
+                    Listening\u2026 release to stop
                   </p>
                 )}
               </div>
@@ -459,18 +536,24 @@ export default function VoicePanel({
                   style={{ border: "1px solid oklch(0.92 0.005 260 / 20%)" }}
                   aria-label="Type a voice command"
                   data-ocid="voice.input"
+                  disabled={isThinking}
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg text-sm font-semibold"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50"
                   style={{
                     backgroundColor: "oklch(0.83 0.11 195)",
                     color: "oklch(0.08 0.002 286)",
                   }}
                   aria-label="Send message"
+                  disabled={isThinking}
                   data-ocid="voice.submit_button"
                 >
-                  Send
+                  {isThinking ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Send"
+                  )}
                 </button>
               </form>
             </div>

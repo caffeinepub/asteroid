@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import {
+  Bot,
   Calendar,
   Camera,
   CheckSquare,
@@ -16,6 +17,7 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import type { AppPage } from "../App";
 import VoicePanel from "../components/VoicePanel";
+import { useAI } from "../hooks/useAI";
 import { useAllTasks } from "../hooks/useQueries";
 
 interface DashboardProps {
@@ -31,6 +33,8 @@ const CAMERA_STATUSES = [
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
   const { data: tasks = [] } = useAllTasks();
+  const { checkAIConfigured } = useAI();
+  const [aiConfigured, setAiConfigured] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [cameraStatusIdx, setCameraStatusIdx] = useState(0);
   const [voiceOpen, setVoiceOpen] = useState(false);
@@ -46,6 +50,16 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     }, 3000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    checkAIConfigured().then((configured) => {
+      if (!cancelled) setAiConfigured(configured);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [checkAIConfigured]);
 
   const upcomingTasks = tasks.filter((t) => !t.completed).slice(0, 3);
   const formattedTime = currentTime.toLocaleTimeString([], {
@@ -90,6 +104,49 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* AI Status Badge */}
+      <div className="flex justify-end mb-3">
+        {aiConfigured ? (
+          <button
+            type="button"
+            onClick={() => onNavigate("settings")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
+            style={{
+              backgroundColor: "oklch(0.78 0.16 155 / 15%)",
+              color: "oklch(0.78 0.16 155)",
+              border: "1px solid oklch(0.78 0.16 155 / 35%)",
+            }}
+            aria-label="AI Connected - click to manage settings"
+            data-ocid="dashboard.button"
+          >
+            <span
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ backgroundColor: "oklch(0.78 0.16 155)" }}
+            />
+            AI Connected
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onNavigate("settings")}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
+            style={{
+              backgroundColor: "oklch(0.87 0.16 65 / 12%)",
+              color: "oklch(0.87 0.16 65)",
+              border: "1px solid oklch(0.87 0.16 65 / 35%)",
+            }}
+            aria-label="AI not configured - click to view settings"
+            data-ocid="dashboard.button"
+          >
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: "oklch(0.87 0.16 65)" }}
+            />
+            AI Not Active
+          </button>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Column 1: Greeting + Tasks */}
         <motion.div

@@ -15,6 +15,14 @@ export const Task = IDL.Record({
   'description' : IDL.Text,
   'category' : IDL.Text,
 });
+export const TaskWithId = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'completed' : IDL.Bool,
+  'dueDate' : IDL.Int,
+  'description' : IDL.Text,
+  'category' : IDL.Text,
+});
 export const VoiceLog = IDL.Record({
   'userInput' : IDL.Text,
   'assistantResponse' : IDL.Text,
@@ -28,19 +36,45 @@ export const Preferences = IDL.Record({
   'wakeWord' : IDL.Text,
   'highContrast' : IDL.Bool,
 });
+export const http_header = IDL.Record({
+  'value' : IDL.Text,
+  'name' : IDL.Text,
+});
+export const http_request_result = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
+export const TransformationInput = IDL.Record({
+  'context' : IDL.Vec(IDL.Nat8),
+  'response' : http_request_result,
+});
+export const TransformationOutput = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
 
 export const idlService = IDL.Service({
   'addTask' : IDL.Func([Task], [IDL.Nat], []),
   'addVoiceLog' : IDL.Func([VoiceLog], [], []),
+  'chatWithAI' : IDL.Func([IDL.Text], [IDL.Text], []),
   'completeTask' : IDL.Func([IDL.Nat], [], []),
   'deleteTask' : IDL.Func([IDL.Nat], [], []),
-  'getAllTasks' : IDL.Func([], [IDL.Vec(Task)], ['query']),
+  'getAllTasks' : IDL.Func([], [IDL.Vec(TaskWithId)], ['query']),
   'getPreferences' : IDL.Func([IDL.Principal], [Preferences], ['query']),
-  'getTask' : IDL.Func([IDL.Nat], [Task], ['query']),
-  'getTasksByCategory' : IDL.Func([IDL.Text], [IDL.Vec(Task)], ['query']),
-  'getTasksByCompletion' : IDL.Func([IDL.Bool], [IDL.Vec(Task)], ['query']),
+  'getTask' : IDL.Func([IDL.Nat], [TaskWithId], ['query']),
+  'getTasksByCategory' : IDL.Func([IDL.Text], [IDL.Vec(TaskWithId)], ['query']),
+  'getTasksByCompletion' : IDL.Func([IDL.Bool], [IDL.Vec(TaskWithId)], ['query']),
   'getVoiceLogs' : IDL.Func([IDL.Principal], [IDL.Vec(VoiceLog)], ['query']),
+  'hasOpenAIKey' : IDL.Func([], [IDL.Bool], ['query']),
+  'setOpenAIKey' : IDL.Func([IDL.Text], [], []),
   'setPreferences' : IDL.Func([Preferences], [], []),
+  'transform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
   'updateTask' : IDL.Func([IDL.Nat, Task], [], []),
 });
 
@@ -48,6 +82,14 @@ export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
   const Task = IDL.Record({
+    'title' : IDL.Text,
+    'completed' : IDL.Bool,
+    'dueDate' : IDL.Int,
+    'description' : IDL.Text,
+    'category' : IDL.Text,
+  });
+  const TaskWithId = IDL.Record({
+    'id' : IDL.Nat,
     'title' : IDL.Text,
     'completed' : IDL.Bool,
     'dueDate' : IDL.Int,
@@ -67,19 +109,42 @@ export const idlFactory = ({ IDL }) => {
     'wakeWord' : IDL.Text,
     'highContrast' : IDL.Bool,
   });
+  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const http_request_result = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const TransformationInput = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : http_request_result,
+  });
+  const TransformationOutput = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
   
   return IDL.Service({
     'addTask' : IDL.Func([Task], [IDL.Nat], []),
     'addVoiceLog' : IDL.Func([VoiceLog], [], []),
+    'chatWithAI' : IDL.Func([IDL.Text], [IDL.Text], []),
     'completeTask' : IDL.Func([IDL.Nat], [], []),
     'deleteTask' : IDL.Func([IDL.Nat], [], []),
-    'getAllTasks' : IDL.Func([], [IDL.Vec(Task)], ['query']),
+    'getAllTasks' : IDL.Func([], [IDL.Vec(TaskWithId)], ['query']),
     'getPreferences' : IDL.Func([IDL.Principal], [Preferences], ['query']),
-    'getTask' : IDL.Func([IDL.Nat], [Task], ['query']),
-    'getTasksByCategory' : IDL.Func([IDL.Text], [IDL.Vec(Task)], ['query']),
-    'getTasksByCompletion' : IDL.Func([IDL.Bool], [IDL.Vec(Task)], ['query']),
+    'getTask' : IDL.Func([IDL.Nat], [TaskWithId], ['query']),
+    'getTasksByCategory' : IDL.Func([IDL.Text], [IDL.Vec(TaskWithId)], ['query']),
+    'getTasksByCompletion' : IDL.Func([IDL.Bool], [IDL.Vec(TaskWithId)], ['query']),
     'getVoiceLogs' : IDL.Func([IDL.Principal], [IDL.Vec(VoiceLog)], ['query']),
+    'hasOpenAIKey' : IDL.Func([], [IDL.Bool], ['query']),
+    'setOpenAIKey' : IDL.Func([IDL.Text], [], []),
     'setPreferences' : IDL.Func([Preferences], [], []),
+    'transform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
     'updateTask' : IDL.Func([IDL.Nat, Task], [], []),
   });
 };
