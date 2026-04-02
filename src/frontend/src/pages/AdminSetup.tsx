@@ -2,8 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   ArrowLeft,
   CheckCircle2,
+  ExternalLink,
   Key,
   Loader2,
   ShieldCheck,
@@ -20,6 +28,51 @@ interface AdminSetupProps {
 
 const ADMIN_PIN = "asteroid123";
 
+type AIProvider = "openai" | "gemini" | "groq" | "cohere";
+
+interface ProviderInfo {
+  label: string;
+  hint: string;
+  placeholder: string;
+  url: string;
+  urlLabel: string;
+  free?: boolean;
+}
+
+const PROVIDERS: Record<AIProvider, ProviderInfo> = {
+  openai: {
+    label: "OpenAI",
+    hint: "sk-...",
+    placeholder: "sk-...",
+    url: "https://platform.openai.com/api-keys",
+    urlLabel: "platform.openai.com/api-keys",
+  },
+  gemini: {
+    label: "Google Gemini",
+    hint: "AIza...",
+    placeholder: "AIza...",
+    url: "https://aistudio.google.com",
+    urlLabel: "aistudio.google.com",
+    free: true,
+  },
+  groq: {
+    label: "Groq",
+    hint: "gsk_...",
+    placeholder: "gsk_...",
+    url: "https://console.groq.com",
+    urlLabel: "console.groq.com",
+    free: true,
+  },
+  cohere: {
+    label: "Cohere",
+    hint: "API key",
+    placeholder: "Enter your Cohere API key",
+    url: "https://dashboard.cohere.com",
+    urlLabel: "dashboard.cohere.com",
+    free: true,
+  },
+};
+
 export default function AdminSetupPage({ onNavigate }: AdminSetupProps) {
   const { actor } = useActor();
 
@@ -29,10 +82,14 @@ export default function AdminSetupPage({ onNavigate }: AdminSetupProps) {
   const [stage, setStage] = useState<"pin" | "key">("pin");
 
   // Stage 2 state
+  const [selectedProvider, setSelectedProvider] =
+    useState<AIProvider>("openai");
   const [apiKey, setApiKey] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
+
+  const providerInfo = PROVIDERS[selectedProvider];
 
   const handlePinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,16 +107,16 @@ export default function AdminSetupPage({ onNavigate }: AdminSetupProps) {
       setSaveError("Not connected to backend. Please wait and try again.");
       return;
     }
-    if (!apiKey.startsWith("sk-")) {
-      setSaveError('API key must start with "sk-"');
+    if (apiKey.trim().length < 10) {
+      setSaveError("Please enter a valid API key (at least 10 characters).");
       return;
     }
     setIsSaving(true);
     setSaveError("");
     try {
-      await actor.setOpenAIKey(apiKey);
+      await actor.setAIConfig(selectedProvider, apiKey.trim());
       setSaved(true);
-      toast.success("API key saved! AI is now active.");
+      toast.success(`${providerInfo.label} key saved! AI is now active.`);
       setTimeout(() => onNavigate("settings"), 2000);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to save key";
@@ -199,7 +256,7 @@ export default function AdminSetupPage({ onNavigate }: AdminSetupProps) {
                 Configure AI Assistant
               </h1>
               <p className="text-sm text-muted-foreground">
-                Set the OpenAI API key for all users
+                Choose your AI provider and enter the API key
               </p>
             </div>
           </div>
@@ -214,45 +271,112 @@ export default function AdminSetupPage({ onNavigate }: AdminSetupProps) {
               border: "1px solid oklch(0.92 0.005 260 / 15%)",
             }}
           >
-            <p className="text-sm text-muted-foreground mb-6">
-              Enter your OpenAI API key (starts with{" "}
-              <code
-                className="px-1.5 py-0.5 rounded text-xs font-mono"
-                style={{
-                  backgroundColor: "oklch(0.83 0.11 195 / 15%)",
-                  color: "oklch(0.83 0.11 195)",
-                }}
-              >
-                sk-
-              </code>
-              ) to enable AI responses for all users.
-            </p>
-
             <form onSubmit={handleKeySave} noValidate>
+              {/* Provider selector */}
               <div className="mb-5">
                 <Label
-                  htmlFor="openai-key"
+                  htmlFor="ai-provider"
                   className="text-sm font-semibold text-foreground mb-1.5 block"
                 >
-                  OpenAI API Key
+                  AI Provider
+                </Label>
+                <Select
+                  value={selectedProvider}
+                  onValueChange={(v) => {
+                    setSelectedProvider(v as AIProvider);
+                    setApiKey("");
+                    setSaveError("");
+                  }}
+                  disabled={isSaving || saved}
+                >
+                  <SelectTrigger
+                    id="ai-provider"
+                    className="bg-muted text-foreground min-h-[44px]"
+                    aria-label="Select AI provider"
+                    data-ocid="admin.select"
+                  >
+                    <SelectValue placeholder="Choose provider" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(
+                      Object.entries(PROVIDERS) as [AIProvider, ProviderInfo][]
+                    ).map(([key, info]) => (
+                      <SelectItem key={key} value={key}>
+                        <span className="flex items-center gap-2">
+                          {info.label}
+                          {info.free && (
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                              style={{
+                                backgroundColor: "oklch(0.78 0.16 155 / 20%)",
+                                color: "oklch(0.78 0.16 155)",
+                              }}
+                            >
+                              Free tier
+                            </span>
+                          )}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Provider help link */}
+                <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                  Get your key at{" "}
+                  <a
+                    href={providerInfo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 hover:underline"
+                    style={{ color: "oklch(0.83 0.11 195)" }}
+                  >
+                    {providerInfo.urlLabel}
+                    <ExternalLink className="w-3 h-3" aria-hidden />
+                  </a>
+                  {providerInfo.free && (
+                    <span
+                      className="ml-1 font-medium"
+                      style={{ color: "oklch(0.78 0.16 155)" }}
+                    >
+                      — free tier available
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* API Key input */}
+              <div className="mb-5">
+                <Label
+                  htmlFor="api-key"
+                  className="text-sm font-semibold text-foreground mb-1.5 block"
+                >
+                  {providerInfo.label} API Key
                 </Label>
                 <Input
-                  id="openai-key"
+                  id="api-key"
                   type="password"
                   value={apiKey}
                   onChange={(e) => {
                     setApiKey(e.target.value);
                     if (saveError) setSaveError("");
                   }}
-                  placeholder="sk-..."
+                  placeholder={providerInfo.placeholder}
                   className="bg-muted text-foreground placeholder:text-muted-foreground min-h-[44px] font-mono text-sm"
-                  aria-label="OpenAI API Key"
-                  aria-describedby={saveError ? "key-error" : undefined}
+                  aria-label={`${providerInfo.label} API Key`}
+                  aria-describedby={saveError ? "key-error" : "key-hint"}
                   aria-invalid={!!saveError}
                   disabled={isSaving || saved}
                   autoFocus
                   data-ocid="admin.input"
                 />
+                <p
+                  id="key-hint"
+                  className="mt-1.5 text-xs text-muted-foreground"
+                >
+                  Key format:{" "}
+                  <code className="font-mono">{providerInfo.hint}</code>
+                </p>
                 {saveError && (
                   <p
                     id="key-error"
@@ -288,8 +412,8 @@ export default function AdminSetupPage({ onNavigate }: AdminSetupProps) {
                     backgroundColor: "oklch(0.83 0.11 195)",
                     color: "oklch(0.08 0.002 286)",
                   }}
-                  disabled={isSaving || !apiKey.trim()}
-                  aria-label="Save OpenAI API Key"
+                  disabled={isSaving || apiKey.trim().length < 10}
+                  aria-label={`Save ${providerInfo.label} API Key`}
                   data-ocid="admin.submit_button"
                 >
                   {isSaving ? (

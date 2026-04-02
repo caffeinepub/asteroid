@@ -18,7 +18,7 @@ actor {
   type Task = {
     title : Text;
     description : Text;
-    category : Text; // "home" or "work"
+    category : Text;
     dueDate : Int;
     completed : Bool;
   };
@@ -101,6 +101,7 @@ actor {
   let voiceLogs = Map.empty<Principal, [VoiceLog]>();
 
   var openaiKey : ?Text = null;
+  var aiProvider : Text = "openai"; // "openai" | "gemini" | "groq" | "cohere"
 
   /**************/
   /* OPERATIONS */
@@ -186,11 +187,13 @@ actor {
       case (null) { [] };
       case (?entries) { entries };
     };
-    let newLogs = [log].concat(userLogs);
-    let trimmedLogs = if (newLogs.size() > 10) {
-      Array.tabulate(10, func(i : Nat) : VoiceLog { newLogs[i] })
+    let combined = Array.tabulate(userLogs.size() + 1, func(i : Nat) : VoiceLog {
+      if (i == 0) { log } else { userLogs[i - 1] }
+    });
+    let trimmedLogs = if (combined.size() > 10) {
+      Array.tabulate(10, func(i : Nat) : VoiceLog { combined[i] })
     } else {
-      newLogs
+      combined
     };
     voiceLogs.add(caller, trimmedLogs);
   };
@@ -206,7 +209,15 @@ actor {
   /* AI Features */
   /**************/
 
+  // Legacy: keep for backward compat
   public shared func setOpenAIKey(key : Text) : async () {
+    openaiKey := ?key;
+    aiProvider := "openai";
+  };
+
+  // New: set provider + key together
+  public shared func setAIConfig(provider : Text, key : Text) : async () {
+    aiProvider := provider;
     openaiKey := ?key;
   };
 
@@ -217,6 +228,10 @@ actor {
     };
   };
 
+  public query func getAIProvider() : async Text {
+    aiProvider;
+  };
+
   public query func transform(input : OutCall.TransformationInput) : async OutCall.TransformationOutput {
     OutCall.transform(input);
   };
@@ -224,34 +239,63 @@ actor {
   public shared func chatWithAI(message : Text) : async Text {
     switch (openaiKey) {
       case (null) {
-        "OpenAI API key not set. Please provide a valid API key.";
+        "AI not configured. Please set up an API key in Settings.";
       };
       case (?key) {
-        let headers = [
-          {
-            name = "Authorization";
-            value = "Bearer " # key;
-          },
-          {
+        if (key.size() == 0) {
+          return "AI not configured. Please set up an API key in Settings.";
+        };
+        let systemPrompt = "You are Asteroid, a helpful virtual assistant for managing daily tasks, navigation, and accessibility. Be concise and friendly.";
+
+        if (aiProvider == "gemini") {
+          // Google Gemini
+          let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" # key;
+          let headers = [{
             name = "Content-Type";
             value = "application/json";
-          },
-        ];
-        let systemPrompt = "You are Asteroid, a helpful virtual assistant for managing daily tasks, navigation, and accessibility. Be concise and friendly.";
-        let body = (
-          "{ \"model\": \"gpt-4o-mini\", " #
-          "\"messages\": [" #
-          "{\"role\":\"system\",\"content\":\""
-        ) # systemPrompt #
-        ("\"}," #
-        "{\"role\":\"user\",\"content\":\"" # message # "\"}], \"max_tokens\": 300 }");
-        let result = await OutCall.httpPostRequest(
-          "https://api.openai.com/v1/chat/completions",
-          headers,
-          body,
-          transform,
-        );
-        result;
+          }];
+          let body = "{\"contents\":[{\"parts\":[{\"text\":\"" # systemPrompt # "\\n\\nUser: " # message # "\"}]}]}";
+          await OutCall.httpPostRequest(url, headers, body, transform);
+        } else if (aiProvider == "groq") {
+          // Groq
+          let headers = [
+            { name = "Authorization"; value = "Bearer " # key },
+            { name = "Content-Type"; value = "application/json" },
+          ];
+          let body = (
+            "{ \"model\": \"llama3-8b-8192\", " #
+            "\"messages\": [" #
+            "{\"role\":\"system\",\"content\":\"" # systemPrompt # "\"}," #
+            "{\"role\":\"user\",\"content\":\"" # message # "\"}], \"max_tokens\": 300 }"
+          );
+          await OutCall.httpPostRequest("https://api.groq.com/openai/v1/chat/completions", headers, body, transform);
+        } else if (aiProvider == "cohere") {
+          // Cohere
+          let headers = [
+            { name = "Authorization"; value = "Bearer " # key },
+            { name = "Content-Type"; value = "application/json" },
+          ];
+          let body = (
+            "{ \"model\": \"command-r\", " #
+            "\"message\": \"" # message # "\", " #
+            "\"preamble\": \"" # systemPrompt # "\", " #
+            "\"max_tokens\": 300 }"
+          );
+          await OutCall.httpPostRequest("https://api.cohere.com/v1/chat", headers, body, transform);
+        } else {
+          // Default: OpenAI
+          let headers = [
+            { name = "Authorization"; value = "Bearer " # key },
+            { name = "Content-Type"; value = "application/json" },
+          ];
+          let body = (
+            "{ \"model\": \"gpt-4o-mini\", " #
+            "\"messages\": [" #
+            "{\"role\":\"system\",\"content\":\"" # systemPrompt # "\"}," #
+            "{\"role\":\"user\",\"content\":\"" # message # "\"}], \"max_tokens\": 300 }"
+          );
+          await OutCall.httpPostRequest("https://api.openai.com/v1/chat/completions", headers, body, transform);
+        };
       };
     };
   };

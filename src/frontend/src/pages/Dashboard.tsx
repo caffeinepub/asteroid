@@ -1,20 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import {
-  Bot,
-  Calendar,
-  Camera,
+  ArrowUp,
   CheckSquare,
   ChevronRight,
-  Clock,
   MapPin,
-  MessageSquare,
   Mic,
-  Navigation,
   Settings,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AppPage } from "../App";
 import VoicePanel from "../components/VoicePanel";
 import { useAI } from "../hooks/useAI";
@@ -24,11 +19,36 @@ interface DashboardProps {
   onNavigate: (page: AppPage) => void;
 }
 
-const CAMERA_STATUSES = [
-  "Initializing camera...",
-  "Scanning environment...",
-  "Clear path detected",
-  "Environment nominal",
+const QUICK_ACTIONS: {
+  icon: typeof Mic;
+  label: string;
+  page: AppPage;
+  color: string;
+}[] = [
+  {
+    icon: CheckSquare,
+    label: "Tasks",
+    page: "tasks",
+    color: "oklch(0.82 0.10 195)",
+  },
+  {
+    icon: Zap,
+    label: "GravityMode",
+    page: "gravity",
+    color: "oklch(0.70 0.19 45)",
+  },
+  {
+    icon: MapPin,
+    label: "EarthMode",
+    page: "earth",
+    color: "oklch(0.52 0.22 261)",
+  },
+  {
+    icon: Settings,
+    label: "Settings",
+    page: "settings",
+    color: "oklch(0.78 0.16 155)",
+  },
 ];
 
 export default function Dashboard({ onNavigate }: DashboardProps) {
@@ -36,18 +56,12 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const { checkAIConfigured } = useAI();
   const [aiConfigured, setAiConfigured] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [cameraStatusIdx, setCameraStatusIdx] = useState(0);
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCameraStatusIdx((i) => (i + 1) % CAMERA_STATUSES.length);
-    }, 3000);
     return () => clearInterval(timer);
   }, []);
 
@@ -61,16 +75,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     };
   }, [checkAIConfigured]);
 
-  const upcomingTasks = tasks.filter((t) => !t.completed).slice(0, 3);
-  const formattedTime = currentTime.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  const formattedDate = currentTime.toLocaleDateString([], {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
+  const upcomingTasks = tasks.filter((t) => !t.completed).slice(0, 4);
 
   const sampleTasks =
     upcomingTasks.length > 0
@@ -100,467 +105,251 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             dueDate: BigInt(0),
             description: "",
           },
+          {
+            title: "Fix kitchen faucet",
+            category: "home",
+            completed: false,
+            id: BigInt(3),
+            dueDate: BigInt(0),
+            description: "",
+          },
         ];
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* AI Status Badge */}
-      <div className="flex justify-end mb-3">
-        {aiConfigured ? (
-          <button
-            type="button"
-            onClick={() => onNavigate("settings")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
-            style={{
-              backgroundColor: "oklch(0.78 0.16 155 / 15%)",
-              color: "oklch(0.78 0.16 155)",
-              border: "1px solid oklch(0.78 0.16 155 / 35%)",
-            }}
-            aria-label="AI Connected - click to manage settings"
-            data-ocid="dashboard.button"
-          >
-            <span
-              className="w-2 h-2 rounded-full animate-pulse"
-              style={{ backgroundColor: "oklch(0.78 0.16 155)" }}
-            />
-            AI Connected
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => onNavigate("settings")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-opacity hover:opacity-80"
-            style={{
-              backgroundColor: "oklch(0.87 0.16 65 / 12%)",
-              color: "oklch(0.87 0.16 65)",
-              border: "1px solid oklch(0.87 0.16 65 / 35%)",
-            }}
-            aria-label="AI not configured - click to view settings"
-            data-ocid="dashboard.button"
-          >
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: "oklch(0.87 0.16 65)" }}
-            />
-            AI Not Active
-          </button>
-        )}
-      </div>
+  const hour = currentTime.getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Column 1: Greeting + Tasks */}
+  const formattedTime = currentTime.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const formattedDate = currentTime.toLocaleDateString([], {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const handleSend = () => {
+    if (!inputText.trim()) return;
+    setVoiceOpen(true);
+    setInputText("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSend();
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      {/* ── Scrollable content ── */}
+      <div className="flex-1 px-5 sm:px-8 pt-8 pb-28">
+        {/* AI Status + time row */}
+        <div className="flex items-center justify-between mb-10">
+          <div className="text-sm text-muted-foreground">
+            <span className="text-foreground font-medium">{formattedTime}</span>
+            <span className="mx-2">·</span>
+            <span>{formattedDate}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate("settings")}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-opacity hover:opacity-80"
+            style={
+              aiConfigured
+                ? {
+                    backgroundColor: "oklch(0.78 0.16 155 / 12%)",
+                    color: "oklch(0.78 0.16 155)",
+                    border: "1px solid oklch(0.78 0.16 155 / 25%)",
+                  }
+                : {
+                    backgroundColor: "oklch(0.87 0.16 65 / 10%)",
+                    color: "oklch(0.87 0.16 65)",
+                    border: "1px solid oklch(0.87 0.16 65 / 25%)",
+                  }
+            }
+            aria-label={aiConfigured ? "AI Connected" : "AI not configured"}
+            data-ocid="dashboard.button"
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{
+                backgroundColor: aiConfigured
+                  ? "oklch(0.78 0.16 155)"
+                  : "oklch(0.87 0.16 65)",
+              }}
+            />
+            {aiConfigured ? "AI Active" : "AI Offline"}
+          </button>
+        </div>
+
+        {/* Hero greeting */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col gap-4"
+          className="mb-12 text-center"
         >
-          <div className="card-dark rounded-xl p-6">
-            <h1 className="font-display font-bold text-4xl text-foreground mb-1">
-              Hi Alex!
-            </h1>
-            <div className="flex items-center gap-2 text-muted-foreground mb-4">
-              <Clock className="w-4 h-4" />
-              <span className="text-lg font-semibold text-foreground">
-                {formattedTime}
-              </span>
-              <span className="text-sm">{formattedDate}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground font-medium">
-                Current Mode:
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="font-display font-bold text-foreground tracking-wide">
-                  STANDARD
-                </span>
-                <Badge
-                  className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                  style={{
-                    backgroundColor: "oklch(0.78 0.16 155)",
-                    color: "oklch(0.08 0.002 286)",
-                  }}
-                >
-                  Active
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <div className="card-dark rounded-xl p-5 flex-1">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground">
-                Upcoming Tasks
-              </h2>
-              <button
-                type="button"
-                onClick={() => onNavigate("tasks")}
-                className="text-cyan text-xs hover:opacity-80 active:opacity-60 transition-opacity duration-150 flex items-center gap-1"
-                aria-label="View all tasks"
-                data-ocid="dashboard.link"
-              >
-                View all <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-2">
-              {sampleTasks.map((task) => (
-                <div
-                  key={task.id.toString()}
-                  className="flex items-center gap-3 p-3 rounded-lg"
-                  style={{ backgroundColor: "oklch(0.13 0.007 270)" }}
-                >
-                  <div
-                    className="w-1 self-stretch rounded-full flex-shrink-0"
-                    style={{
-                      backgroundColor:
-                        task.category === "work"
-                          ? "oklch(0.52 0.22 261)"
-                          : "oklch(0.78 0.16 155)",
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {task.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {task.category}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground mb-2 tracking-tight">
+            {greeting}
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            How can I help you today?
+          </p>
         </motion.div>
 
-        {/* Column 2: Voice CTA */}
+        {/* Quick action chips */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.45, delay: 0.1 }}
+          className="flex flex-wrap justify-center gap-2 mb-12"
         >
-          <div
-            className="card-dark rounded-xl p-6 h-full flex flex-col items-center justify-center gap-6 text-center relative overflow-hidden"
-            style={{
-              borderColor: "oklch(0.83 0.11 195 / 30%)",
-              borderWidth: "1px",
-            }}
-          >
-            <div
-              className="absolute inset-0 rounded-xl pointer-events-none"
+          {QUICK_ACTIONS.map(({ icon: Icon, label, page, color }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => onNavigate(page)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 hover:scale-[1.03] active:scale-[0.97]"
               style={{
-                background:
-                  "radial-gradient(ellipse at center, oklch(0.83 0.11 195 / 8%) 0%, transparent 70%)",
+                backgroundColor: "oklch(0.09 0.003 260)",
+                border: "1px solid oklch(0.90 0 0 / 10%)",
+                color: "oklch(0.80 0.006 260)",
               }}
-            />
-
-            <h2 className="font-display font-bold text-2xl uppercase tracking-widest text-foreground relative z-10">
-              TALK TO ASTEROID
-            </h2>
-
-            <div className="relative z-10">
-              <button
-                type="button"
-                onClick={() => setVoiceOpen(true)}
-                className="relative w-28 h-28 rounded-full flex items-center justify-center transition-transform duration-150 active:scale-95 animate-mic-glow"
-                style={{
-                  backgroundColor: "oklch(0.14 0.03 195)",
-                  border: "2px solid oklch(0.83 0.11 195)",
-                }}
-                aria-label="Hold to speak with Asteroid voice assistant"
-                data-ocid="dashboard.primary_button"
-              >
-                <Mic className="w-12 h-12 text-cyan" />
-                <span
-                  className="absolute inset-0 rounded-full animate-pulse-ring"
-                  style={{ border: "2px solid oklch(0.83 0.11 195 / 40%)" }}
-                  aria-hidden="true"
-                />
-              </button>
-            </div>
-
-            <p className="text-muted-foreground text-sm font-semibold tracking-widest uppercase relative z-10">
-              HOLD TO SPEAK
-            </p>
-            <p className="text-xs text-muted-foreground relative z-10">
-              Or say{" "}
-              <span className="text-cyan font-semibold">"Hey Asteroid"</span> to
-              wake
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Column 3: Live Camera Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <div className="card-dark rounded-xl p-6 h-full flex flex-col gap-5">
-            <div className="flex items-center justify-between">
-              <h2 className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground">
-                Live Camera Status
-              </h2>
-              <span className="flex items-center gap-1.5">
-                <span
-                  className="w-2 h-2 rounded-full animate-pulse"
-                  style={{ backgroundColor: "oklch(0.78 0.16 155)" }}
-                />
-                <span
-                  className="text-xs"
-                  style={{ color: "oklch(0.78 0.16 155)" }}
-                >
-                  Active
-                </span>
-              </span>
-            </div>
-
-            <div
-              className="flex-1 rounded-lg flex flex-col items-center justify-center gap-3 min-h-32"
-              style={{
-                backgroundColor: "oklch(0.09 0.002 270)",
-                border: "1px solid oklch(0.92 0.005 260 / 10%)",
-              }}
+              aria-label={`Open ${label}`}
+              data-ocid="dashboard.button"
             >
-              <Camera className="w-8 h-8 text-muted-foreground" aria-hidden />
-              <p className="text-sm text-muted-foreground text-center">
-                {CAMERA_STATUSES[cameraStatusIdx]}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {[
-                { label: "Obstacle Detection", on: true },
-                { label: "Depth Estimation", on: true },
-                { label: "Object Labeling", on: false },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-sm text-muted-foreground">
-                    {item.label}
-                  </span>
-                  <span
-                    className="text-xs font-semibold px-2 py-0.5 rounded-full"
-                    style={
-                      item.on
-                        ? {
-                            backgroundColor: "oklch(0.83 0.11 195)",
-                            color: "oklch(0.08 0.002 286)",
-                          }
-                        : {
-                            backgroundColor: "oklch(0.15 0.005 264)",
-                            color: "oklch(0.76 0.009 264)",
-                          }
-                    }
-                  >
-                    {item.on ? "ON" : "OFF"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Feature tiles */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8"
-      >
-        {[
-          {
-            icon: CheckSquare,
-            label: "Tasks",
-            color: "oklch(0.83 0.11 195)",
-            bg: "oklch(0.14 0.03 195 / 60%)",
-            page: "tasks" as AppPage,
-          },
-          {
-            icon: Calendar,
-            label: "GravityMode",
-            color: "oklch(0.70 0.19 45)",
-            bg: "oklch(0.14 0.06 45 / 60%)",
-            page: "gravity" as AppPage,
-          },
-          {
-            icon: Navigation,
-            label: "EarthMode",
-            color: "oklch(0.52 0.22 261)",
-            bg: "oklch(0.12 0.05 261 / 60%)",
-            page: "earth" as AppPage,
-          },
-          {
-            icon: Settings,
-            label: "Settings",
-            color: "oklch(0.78 0.16 155)",
-            bg: "oklch(0.12 0.05 155 / 60%)",
-            page: "settings" as AppPage,
-          },
-        ].map(({ icon: Icon, label, color, bg, page }) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => onNavigate(page)}
-            className="card-dark rounded-xl p-6 flex flex-col items-center gap-3 hover:scale-[1.02] active:scale-[0.97] transition-all duration-150 min-h-[110px]"
-            style={{ borderColor: `${color}30` }}
-            aria-label={`Navigate to ${label}`}
-            data-ocid="dashboard.button"
-          >
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ backgroundColor: bg }}
-            >
-              <Icon className="w-6 h-6" style={{ color }} aria-hidden />
-            </div>
-            <span className="font-display font-bold text-sm uppercase tracking-wide text-foreground">
+              <Icon className="w-3.5 h-3.5" style={{ color }} aria-hidden />
               {label}
-            </span>
-          </button>
-        ))}
-      </motion.div>
+            </button>
+          ))}
+        </motion.div>
 
-      {/* Accessibility Modes */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <h2 className="font-display font-bold text-xl uppercase tracking-widest text-foreground mb-4">
-          Accessibility Modes
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div
-            className="card-dark rounded-xl p-6 flex flex-col gap-4"
-            style={{
-              borderColor: "oklch(0.70 0.19 45 / 40%)",
-              borderWidth: "1px",
-            }}
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Zap
-                    className="w-5 h-5"
-                    style={{ color: "oklch(0.70 0.19 45)" }}
-                    aria-hidden
-                  />
-                  <h3 className="font-display font-bold text-lg text-foreground">
-                    GravityMode
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Real-time obstacle detection & safe navigation using your
-                  phone camera
-                </p>
-              </div>
-              <Badge
-                className="text-xs px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: "oklch(0.70 0.19 45 / 20%)",
-                  color: "oklch(0.70 0.19 45)",
-                  border: "1px solid oklch(0.70 0.19 45 / 40%)",
-                }}
-              >
-                Vision AI
-              </Badge>
-            </div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" aria-hidden />
-                Obstacle & hazard detection
-              </li>
-              <li className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" aria-hidden />
-                Voice & haptic feedback
-              </li>
-              <li className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" aria-hidden />
-                Hands-free operation
-              </li>
-            </ul>
+        {/* Upcoming tasks */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.2 }}
+          className="max-w-2xl mx-auto"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Upcoming
+            </h2>
             <button
               type="button"
-              onClick={() => onNavigate("gravity")}
-              className="w-full py-3 rounded-lg font-display font-bold text-sm uppercase tracking-widest transition-all duration-150 hover:opacity-90 active:scale-[0.97]"
-              style={{
-                backgroundColor: "oklch(0.70 0.19 45)",
-                color: "oklch(0.08 0.002 286)",
-              }}
-              aria-label="Activate GravityMode"
-              data-ocid="dashboard.primary_button"
+              onClick={() => onNavigate("tasks")}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              aria-label="View all tasks"
+              data-ocid="dashboard.link"
             >
-              ACTIVATE MODE
+              View all <ChevronRight className="w-3 h-3" aria-hidden />
             </button>
           </div>
 
+          <div className="flex flex-col gap-1.5">
+            {sampleTasks.map((task, i) => (
+              <motion.div
+                key={task.id.toString()}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25 + i * 0.05 }}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg"
+                style={{
+                  backgroundColor: "oklch(0.09 0.003 260)",
+                  border: "1px solid oklch(0.90 0 0 / 7%)",
+                }}
+                data-ocid={`dashboard.item.${i + 1}`}
+              >
+                <span
+                  className="w-1 h-5 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor:
+                      task.category === "work"
+                        ? "oklch(0.52 0.22 261)"
+                        : "oklch(0.78 0.16 155)",
+                  }}
+                  aria-hidden
+                />
+                <span className="flex-1 text-sm text-foreground truncate">
+                  {task.title}
+                </span>
+                <Badge
+                  className="text-[10px] px-2 py-0 rounded-full font-normal"
+                  style={{
+                    backgroundColor: "oklch(0.12 0.004 260)",
+                    color: "oklch(0.55 0.006 260)",
+                    border: "none",
+                  }}
+                >
+                  {task.category}
+                </Badge>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* ── Bottom input bar ── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 md:left-[260px] z-30 px-5 sm:px-8 py-4 input-bar"
+        style={{ borderTop: "1px solid oklch(0.90 0 0 / 7%)" }}
+      >
+        {/* Mobile: above tab bar */}
+        <div className="max-w-2xl mx-auto">
           <div
-            className="card-dark rounded-xl p-6 flex flex-col gap-4"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl"
             style={{
-              borderColor: "oklch(0.52 0.22 261 / 40%)",
-              borderWidth: "1px",
+              backgroundColor: "oklch(0.10 0.004 260)",
+              border: "1px solid oklch(0.90 0 0 / 12%)",
             }}
           >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <MapPin
-                    className="w-5 h-5"
-                    style={{ color: "oklch(0.52 0.22 261)" }}
-                    aria-hidden
-                  />
-                  <h3 className="font-display font-bold text-lg text-foreground">
-                    EarthMode
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  GPS + camera guided navigation for blind & visually impaired
-                  users
-                </p>
-              </div>
-              <Badge
-                className="text-xs px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: "oklch(0.52 0.22 261 / 20%)",
-                  color: "oklch(0.52 0.22 261)",
-                  border: "1px solid oklch(0.52 0.22 261 / 40%)",
-                }}
-              >
-                GPS + AI
-              </Badge>
-            </div>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" aria-hidden />
-                Turn-by-turn guidance
-              </li>
-              <li className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" aria-hidden />
-                Landmark announcements
-              </li>
-              <li className="flex items-center gap-2">
-                <MessageSquare className="w-3 h-3" aria-hidden />
-                Off-route detection
-              </li>
-            </ul>
             <button
               type="button"
-              onClick={() => onNavigate("earth")}
-              className="w-full py-3 rounded-lg font-display font-bold text-sm uppercase tracking-widest transition-all duration-150 hover:opacity-90 active:scale-[0.97]"
-              style={{
-                backgroundColor: "oklch(0.52 0.22 261)",
-                color: "oklch(0.08 0.002 286)",
-              }}
-              aria-label="Activate EarthMode"
+              onClick={() => setVoiceOpen(true)}
+              className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all hover:opacity-80 active:scale-95"
+              style={{ backgroundColor: "oklch(0.13 0.004 260)" }}
+              aria-label="Open voice assistant"
               data-ocid="dashboard.primary_button"
             >
-              ACTIVATE MODE
+              <Mic className="w-4 h-4 text-cyan" aria-hidden />
+            </button>
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Message Asteroid…"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none min-w-0"
+              aria-label="Message input"
+              data-ocid="dashboard.input"
+            />
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!inputText.trim()}
+              className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-all disabled:opacity-30 hover:opacity-80 active:scale-95"
+              style={{
+                backgroundColor: inputText.trim()
+                  ? "oklch(0.82 0.10 195)"
+                  : "oklch(0.13 0.004 260)",
+              }}
+              aria-label="Send message"
+              data-ocid="dashboard.submit_button"
+            >
+              <ArrowUp
+                className="w-4 h-4"
+                style={{
+                  color: inputText.trim()
+                    ? "oklch(0.065 0.002 260)"
+                    : "oklch(0.45 0.005 260)",
+                }}
+                aria-hidden
+              />
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       <VoicePanel
         open={voiceOpen}

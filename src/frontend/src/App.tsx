@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import Layout from "./components/Layout";
 import AdminSetupPage from "./pages/AdminSetup";
+import ChatPage from "./pages/Chat";
 import Dashboard from "./pages/Dashboard";
 import EarthModePage from "./pages/EarthMode";
 import GravityModePage from "./pages/GravityMode";
@@ -10,6 +11,7 @@ import TasksPage from "./pages/Tasks";
 
 export type AppPage =
   | "dashboard"
+  | "chat"
   | "gravity"
   | "earth"
   | "tasks"
@@ -23,6 +25,8 @@ export default function App() {
     switch (currentPage) {
       case "dashboard":
         return <Dashboard onNavigate={setCurrentPage} />;
+      case "chat":
+        return <ChatPage onNavigate={setCurrentPage} />;
       case "gravity":
         return <GravityModePage onNavigate={setCurrentPage} />;
       case "earth":

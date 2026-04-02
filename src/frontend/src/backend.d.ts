@@ -54,26 +54,20 @@ export interface http_request_result {
     headers: Array<http_header>;
 }
 export interface backendInterface {
-    /**
-     * / ***********
-     * / ***********
-     */
     addTask(task: Task): Promise<bigint>;
     addVoiceLog(log: VoiceLog): Promise<void>;
     chatWithAI(message: string): Promise<string>;
     completeTask(taskId: bigint): Promise<void>;
     deleteTask(taskId: bigint): Promise<void>;
     getAllTasks(): Promise<Array<TaskWithId>>;
+    getAIProvider(): Promise<string>;
     getPreferences(user: Principal): Promise<Preferences>;
     getTask(taskId: bigint): Promise<TaskWithId>;
     getTasksByCategory(category: string): Promise<Array<TaskWithId>>;
     getTasksByCompletion(completed: boolean): Promise<Array<TaskWithId>>;
     getVoiceLogs(user: Principal): Promise<Array<VoiceLog>>;
     hasOpenAIKey(): Promise<boolean>;
-    /**
-     * / ***********
-     * / ***********
-     */
+    setAIConfig(provider: string, key: string): Promise<void>;
     setOpenAIKey(key: string): Promise<void>;
     setPreferences(prefs: Preferences): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;

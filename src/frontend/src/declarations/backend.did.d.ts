@@ -54,26 +54,20 @@ export interface http_request_result {
   'headers' : Array<http_header>,
 }
 export interface _SERVICE {
-  /**
-   * / ***********
-   * / ***********
-   */
   'addTask' : ActorMethod<[Task], bigint>,
   'addVoiceLog' : ActorMethod<[VoiceLog], undefined>,
   'chatWithAI' : ActorMethod<[string], string>,
   'completeTask' : ActorMethod<[bigint], undefined>,
   'deleteTask' : ActorMethod<[bigint], undefined>,
   'getAllTasks' : ActorMethod<[], Array<TaskWithId>>,
+  'getAIProvider' : ActorMethod<[], string>,
   'getPreferences' : ActorMethod<[Principal], Preferences>,
   'getTask' : ActorMethod<[bigint], TaskWithId>,
   'getTasksByCategory' : ActorMethod<[string], Array<TaskWithId>>,
   'getTasksByCompletion' : ActorMethod<[boolean], Array<TaskWithId>>,
   'getVoiceLogs' : ActorMethod<[Principal], Array<VoiceLog>>,
   'hasOpenAIKey' : ActorMethod<[], boolean>,
-  /**
-   * / ***********
-   * / ***********
-   */
+  'setAIConfig' : ActorMethod<[string, string], undefined>,
   'setOpenAIKey' : ActorMethod<[string], undefined>,
   'setPreferences' : ActorMethod<[Preferences], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
