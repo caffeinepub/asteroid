@@ -111,31 +111,78 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   }, [checkAIConfigured]);
 
   const checkPermissions = useCallback(async () => {
-    if (!navigator.permissions) {
-      setPermissions({
-        microphone: "unknown",
-        camera: "unknown",
-        location: "unknown",
-      });
-      return;
-    }
     setPermissionsLoading(true);
+
+    const checkMediaPermission = async (
+      type: "microphone" | "camera",
+    ): Promise<PermissionStatus> => {
+      // First try the Permissions API (works in Chrome desktop reliably)
+      if (navigator.permissions) {
+        try {
+          const result = await navigator.permissions.query({
+            name: type as PermissionName,
+          });
+          // Only trust "granted" and "denied" from this API if not on a platform
+          // known to lie. "prompt" is safe to return.
+          if (result.state === "granted" || result.state === "denied") {
+            return result.state as PermissionStatus;
+          }
+          // If "prompt", fall through to actually test
+        } catch {
+          // Permissions API doesn't support this query — fall through
+        }
+      }
+
+      // Fall back: actually probe getUserMedia briefly
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return "unknown";
+      }
+      try {
+        const constraints =
+          type === "camera" ? { video: true } : { audio: true };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        // Immediately stop all tracks — we only needed to check permission
+        for (const track of stream.getTracks()) track.stop();
+        return "granted";
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          if (
+            err.name === "NotAllowedError" ||
+            err.name === "PermissionDeniedError"
+          ) {
+            return "denied";
+          }
+        }
+        // NotFoundError, NotReadableError, etc. — device issue, not a permission issue
+        return "unknown";
+      }
+    };
+
+    const checkLocationPermission = async (): Promise<PermissionStatus> => {
+      if (navigator.permissions) {
+        try {
+          const result = await navigator.permissions.query({
+            name: "geolocation" as PermissionName,
+          });
+          return result.state as PermissionStatus;
+        } catch {
+          // ignore
+        }
+      }
+      if (!navigator.geolocation) return "unknown";
+      return "prompt"; // Can't tell without asking
+    };
+
     try {
-      const [micResult, camResult, locResult] = await Promise.all([
-        navigator.permissions
-          .query({ name: "microphone" as PermissionName })
-          .catch(() => ({ state: "unknown" as PermissionStatus })),
-        navigator.permissions
-          .query({ name: "camera" as PermissionName })
-          .catch(() => ({ state: "unknown" as PermissionStatus })),
-        navigator.permissions
-          .query({ name: "geolocation" as PermissionName })
-          .catch(() => ({ state: "unknown" as PermissionStatus })),
+      const [micStatus, camStatus, locStatus] = await Promise.all([
+        checkMediaPermission("microphone"),
+        checkMediaPermission("camera"),
+        checkLocationPermission(),
       ]);
       setPermissions({
-        microphone: (micResult.state as PermissionStatus) || "unknown",
-        camera: (camResult.state as PermissionStatus) || "unknown",
-        location: (locResult.state as PermissionStatus) || "unknown",
+        microphone: micStatus,
+        camera: camStatus,
+        location: locStatus,
       });
     } catch {
       setPermissions({
