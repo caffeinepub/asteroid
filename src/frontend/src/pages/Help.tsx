@@ -7,6 +7,7 @@ import {
 import { Key, Mic, Shield, Wifi } from "lucide-react";
 import { motion } from "motion/react";
 import type { AppPage } from "../App";
+import AsteroidLogo from "../components/AsteroidLogo";
 
 interface HelpProps {
   onNavigate: (page: AppPage) => void;
@@ -93,6 +94,9 @@ export default function HelpPage({ onNavigate }: HelpProps) {
           transition={{ duration: 0.55 }}
           className="mb-12"
         >
+          <div className="mb-6">
+            <AsteroidLogo size={48} />
+          </div>
           <p
             className="text-xs font-semibold uppercase tracking-widest mb-3"
             style={{ color: "oklch(0.82 0.10 195)" }}

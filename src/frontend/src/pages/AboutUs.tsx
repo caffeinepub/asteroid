@@ -1,5 +1,6 @@
 import { motion } from "motion/react";
 import type { AppPage } from "../App";
+import AsteroidLogo from "../components/AsteroidLogo";
 
 interface AboutUsProps {
   onNavigate: (page: AppPage) => void;
@@ -10,7 +11,7 @@ const VALUES = [
     emoji: "♿",
     title: "Accessibility First",
     description:
-      "Every feature is built with universal design at its core. No compromises, no afterthoughts \u2014 accessibility is our foundation, not a feature.",
+      "Every feature is built with universal design at its core. No compromises, no afterthoughts — accessibility is our foundation, not a feature.",
     color: "oklch(0.78 0.18 210)",
     bgColor: "oklch(0.78 0.18 210 / 6%)",
     borderColor: "oklch(0.78 0.18 210 / 25%)",
@@ -53,7 +54,7 @@ const TEAM = [
     initial: "S",
     name: "Samyo Debnath",
     role: "CEO & Founder",
-    bio: "Driven by a vision to make AI-powered assistance universally accessible, Samyo founded Asteroid to bridge the gap between emerging technology and those who need it most. His unwavering belief that great technology should empower every person \u2014 regardless of physical ability \u2014 shapes every decision at Asteroid.",
+    bio: "Driven by a vision to make AI-powered assistance universally accessible, Samyo founded Asteroid to bridge the gap between emerging technology and those who need it most. His unwavering belief that great technology should empower every person — regardless of physical ability — shapes every decision at Asteroid.",
     accentColor: "oklch(0.78 0.18 210)",
     roleColor: "oklch(0.78 0.18 210 / 12%)",
     roleFontColor: "oklch(0.78 0.18 210)",
@@ -86,14 +87,7 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
           aria-label="Hero section"
         >
           <div className="flex justify-center mb-6">
-            <img
-              src="/assets/generated/asteroid-spacex-logo-transparent.dim_400x200.png"
-              alt="Asteroid logo"
-              className="w-48 h-auto object-contain"
-              style={{
-                filter: "drop-shadow(0 0 16px oklch(0.78 0.18 210 / 40%))",
-              }}
-            />
+            <AsteroidLogo size={72} />
           </div>
           <div className="mb-4">
             <span className="text-hud" style={{ opacity: 0.6 }}>
@@ -123,8 +117,8 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
           >
             Asteroid is an accessibility-first AI assistant designed to empower
             blind and disabled users in daily life. We combine conversational
-            AI, real-time computer vision, and GPS navigation \u2014 all
-            operable hands-free, with your voice.
+            AI, real-time computer vision, and GPS navigation — all operable
+            hands-free, with your voice.
           </p>
         </motion.header>
 
@@ -158,7 +152,7 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
             className="text-base leading-relaxed"
             style={{ color: "oklch(0.72 0.006 240)" }}
           >
-            To democratize access to intelligent assistance for everyone \u2014
+            To democratize access to intelligent assistance for everyone —
             regardless of physical ability. We believe cutting-edge AI tools
             should be universally available: hands-free, voice-first, and
             completely accessible. No barriers. No exceptions.
@@ -387,8 +381,7 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
             className="text-[10px] font-mono uppercase tracking-wider"
             style={{ color: "oklch(0.38 0.005 240)" }}
           >
-            &copy; {new Date().getFullYear()} &middot; Built with \u2764\ufe0f
-            using{" "}
+            &copy; {new Date().getFullYear()} &middot; Built with ❤️ using{" "}
             <a
               href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
               target="_blank"
