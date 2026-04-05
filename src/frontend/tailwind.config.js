@@ -16,9 +16,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['BricolageGrotesque', 'sans-serif'],
-        body: ['Satoshi', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        display: ["BricolageGrotesque", "sans-serif"],
+        body: ["Satoshi", "sans-serif"],
+        mono: ["JetBrains Mono", "Courier New", "monospace"],
       },
       colors: {
         border: "oklch(var(--border))",
@@ -73,14 +73,16 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0.2rem",
+        md: "0.15rem",
+        sm: "0.1rem",
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgba(0,0,0,0.05)",
-        "cyan-glow": "0 0 20px oklch(0.83 0.11 195 / 30%), 0 0 60px oklch(0.83 0.11 195 / 10%)",
-        "orange-glow": "0 0 20px oklch(0.70 0.19 45 / 30%), 0 0 60px oklch(0.70 0.19 45 / 10%)",
+        "hud-glow": "0 0 20px oklch(0.78 0.18 210 / 35%), 0 0 60px oklch(0.78 0.18 210 / 12%)",
+        "hud-border": "0 0 12px oklch(0.78 0.18 210 / 20%), inset 0 0 8px oklch(0.78 0.18 210 / 5%)",
+        "cyan-glow": "0 0 20px oklch(0.78 0.18 210 / 30%), 0 0 60px oklch(0.78 0.18 210 / 10%)",
+        "orange-glow": "0 0 20px oklch(0.72 0.22 35 / 30%), 0 0 60px oklch(0.72 0.22 35 / 10%)",
         "blue-glow": "0 0 20px oklch(0.52 0.22 261 / 30%), 0 0 60px oklch(0.52 0.22 261 / 10%)",
       },
       keyframes: {

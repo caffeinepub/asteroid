@@ -16,83 +16,90 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/assets/fonts/JetBrainsMono.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --radius: 0.625rem;
-    /* Asteroid — deep dark, ChatGPT-inspired minimalism */
-    --background: 0.065 0.002 260;
-    --foreground: 0.97 0.004 260;
-    --card: 0.09 0.003 260;
-    --card-foreground: 0.97 0.004 260;
-    --popover: 0.1 0.004 260;
-    --popover-foreground: 0.97 0.004 260;
-    --primary: 0.82 0.1 195;
-    --primary-foreground: 0.065 0.002 260;
-    --secondary: 0.12 0.004 260;
-    --secondary-foreground: 0.97 0.004 260;
-    --muted: 0.13 0.004 260;
-    --muted-foreground: 0.62 0.006 260;
-    --accent: 0.7 0.19 45;
-    --accent-foreground: 0.065 0.002 260;
+    --radius: 0.2rem;
+    /* Asteroid — SpaceX / Mission Control aesthetic */
+    --background: 0.04 0.005 240;
+    --foreground: 0.97 0.004 220;
+    --card: 0.075 0.006 235;
+    --card-foreground: 0.97 0.004 220;
+    --popover: 0.085 0.006 235;
+    --popover-foreground: 0.97 0.004 220;
+    --primary: 0.78 0.18 210;
+    --primary-foreground: 0.04 0.005 240;
+    --secondary: 0.1 0.006 235;
+    --secondary-foreground: 0.97 0.004 220;
+    --muted: 0.11 0.005 235;
+    --muted-foreground: 0.55 0.008 220;
+    --accent: 0.72 0.22 35;
+    --accent-foreground: 0.04 0.005 240;
     --destructive: 0.6 0.22 25;
-    --destructive-foreground: 0.97 0.004 260;
-    --border: 0.9 0 0 / 7%;
-    --input: 0.9 0 0 / 9%;
-    --ring: 0.82 0.1 195;
-    --chart-1: 0.82 0.1 195;
-    --chart-2: 0.7 0.19 45;
+    --destructive-foreground: 0.97 0.004 220;
+    --border: 0.78 0.18 210 / 12%;
+    --input: 0.78 0.18 210 / 8%;
+    --ring: 0.78 0.18 210;
+    --chart-1: 0.78 0.18 210;
+    --chart-2: 0.72 0.22 35;
     --chart-3: 0.52 0.22 261;
     --chart-4: 0.87 0.16 84;
     --chart-5: 0.78 0.16 155;
-    --sidebar: 0.075 0.003 260;
-    --sidebar-foreground: 0.97 0.004 260;
-    --sidebar-primary: 0.82 0.1 195;
-    --sidebar-primary-foreground: 0.065 0.002 260;
-    --sidebar-accent: 0.12 0.004 260;
-    --sidebar-accent-foreground: 0.97 0.004 260;
-    --sidebar-border: 0.9 0 0 / 7%;
-    --sidebar-ring: 0.82 0.1 195;
+    --sidebar: 0.055 0.006 235;
+    --sidebar-foreground: 0.97 0.004 220;
+    --sidebar-primary: 0.78 0.18 210;
+    --sidebar-primary-foreground: 0.04 0.005 240;
+    --sidebar-accent: 0.1 0.006 235;
+    --sidebar-accent-foreground: 0.97 0.004 220;
+    --sidebar-border: 0.78 0.18 210 / 12%;
+    --sidebar-ring: 0.78 0.18 210;
     /* Custom tokens */
-    --cyan: 0.82 0.1 195;
-    --orange: 0.7 0.19 45;
-    --blue: 0.52 0.22 261;
-    --yellow: 0.87 0.16 84;
-    --green: 0.78 0.16 155;
+    --hud-blue: 0.78 0.18 210;
+    --rocket-orange: 0.72 0.22 35;
+    --mission-green: 0.78 0.16 155;
+    --deep-blue: 0.52 0.22 261;
+    --sol-yellow: 0.87 0.16 84;
   }
 
   .dark {
-    --background: 0.065 0.002 260;
-    --foreground: 0.97 0.004 260;
-    --card: 0.09 0.003 260;
-    --card-foreground: 0.97 0.004 260;
-    --popover: 0.1 0.004 260;
-    --popover-foreground: 0.97 0.004 260;
-    --primary: 0.82 0.1 195;
-    --primary-foreground: 0.065 0.002 260;
-    --secondary: 0.12 0.004 260;
-    --secondary-foreground: 0.97 0.004 260;
-    --muted: 0.13 0.004 260;
-    --muted-foreground: 0.62 0.006 260;
-    --accent: 0.7 0.19 45;
-    --accent-foreground: 0.065 0.002 260;
+    --background: 0.04 0.005 240;
+    --foreground: 0.97 0.004 220;
+    --card: 0.075 0.006 235;
+    --card-foreground: 0.97 0.004 220;
+    --popover: 0.085 0.006 235;
+    --popover-foreground: 0.97 0.004 220;
+    --primary: 0.78 0.18 210;
+    --primary-foreground: 0.04 0.005 240;
+    --secondary: 0.1 0.006 235;
+    --secondary-foreground: 0.97 0.004 220;
+    --muted: 0.11 0.005 235;
+    --muted-foreground: 0.55 0.008 220;
+    --accent: 0.72 0.22 35;
+    --accent-foreground: 0.04 0.005 240;
     --destructive: 0.6 0.22 25;
-    --destructive-foreground: 0.97 0.004 260;
-    --border: 0.9 0 0 / 7%;
-    --input: 0.9 0 0 / 9%;
-    --ring: 0.82 0.1 195;
-    --chart-1: 0.82 0.1 195;
-    --chart-2: 0.7 0.19 45;
+    --destructive-foreground: 0.97 0.004 220;
+    --border: 0.78 0.18 210 / 12%;
+    --input: 0.78 0.18 210 / 8%;
+    --ring: 0.78 0.18 210;
+    --chart-1: 0.78 0.18 210;
+    --chart-2: 0.72 0.22 35;
     --chart-3: 0.52 0.22 261;
     --chart-4: 0.87 0.16 84;
     --chart-5: 0.78 0.16 155;
-    --sidebar: 0.075 0.003 260;
-    --sidebar-foreground: 0.97 0.004 260;
-    --sidebar-primary: 0.82 0.1 195;
-    --sidebar-primary-foreground: 0.065 0.002 260;
-    --sidebar-accent: 0.12 0.004 260;
-    --sidebar-accent-foreground: 0.97 0.004 260;
-    --sidebar-border: 0.9 0 0 / 7%;
-    --sidebar-ring: 0.82 0.1 195;
+    --sidebar: 0.055 0.006 235;
+    --sidebar-foreground: 0.97 0.004 220;
+    --sidebar-primary: 0.78 0.18 210;
+    --sidebar-primary-foreground: 0.04 0.005 240;
+    --sidebar-accent: 0.1 0.006 235;
+    --sidebar-accent-foreground: 0.97 0.004 220;
+    --sidebar-border: 0.78 0.18 210 / 12%;
+    --sidebar-ring: 0.78 0.18 210;
   }
 
   * {
@@ -114,7 +121,7 @@
     cursor: pointer;
   }
 
-  /* Scrollbar — minimal */
+  /* Scrollbar — minimal HUD style */
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
@@ -123,19 +130,111 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.28 0.005 260);
+    background: oklch(0.78 0.18 210 / 25%);
     border-radius: 2px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.78 0.18 210 / 45%);
   }
 }
 
 @layer utilities {
+  /* ── HUD / Mission Control utilities ────────────────── */
+
+  /* Full animated grid background — for hero sections with ample height */
+  .hud-grid-bg {
+    position: relative;
+    overflow: hidden;
+    /* GPU-composited animation to avoid layout repaints */
+    will-change: background-position;
+    transform: translateZ(0);
+    background-image: linear-gradient(
+        oklch(0.78 0.18 210 / 3%) 1px,
+        transparent 1px
+      ), linear-gradient(90deg, oklch(0.78 0.18 210 / 3%) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: grid-drift 10s linear infinite;
+  }
+
+  /* Static grid — for narrow headers/bars where animation would be distracting */
+  .hud-grid-static {
+    position: relative;
+    overflow: hidden;
+    background-image: linear-gradient(
+        oklch(0.78 0.18 210 / 2%) 1px,
+        transparent 1px
+      ), linear-gradient(90deg, oklch(0.78 0.18 210 / 2%) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Glowing border — use as standalone class, don't combine with clip-corner on the same element */
+  .hud-border {
+    border: 1px solid oklch(0.78 0.18 210 / 30%);
+    box-shadow: 0 0 12px oklch(0.78 0.18 210 / 15%), inset 0 0 12px
+      oklch(0.78 0.18 210 / 5%);
+  }
+
+  /* Glow-only variant — safe to pair with clip-corner since no border conflicts */
+  .hud-glow {
+    box-shadow: 0 0 16px oklch(0.78 0.18 210 / 18%), inset 0 0 16px
+      oklch(0.78 0.18 210 / 6%);
+  }
+
+  .scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.78 0.18 210 / 60%),
+      oklch(0.78 0.18 210),
+      oklch(0.78 0.18 210 / 60%),
+      transparent
+    );
+    box-shadow: 0 0 8px oklch(0.78 0.18 210 / 50%);
+    animation: hud-scan 4s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+    will-change: transform;
+  }
+
+  .text-hud {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: oklch(0.78 0.18 210);
+  }
+
+  .telemetry {
+    font-family: "JetBrains Mono", "Courier New", monospace;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: oklch(0.78 0.18 210);
+  }
+
+  /* Clip-corner: do NOT combine with hud-border on the same element */
+  /* Apply hud-glow instead for the glow effect on clipped elements */
+  .clip-corner {
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 20px oklch(0.78 0.18 210 / 35%), 0 0 60px
+      oklch(0.78 0.18 210 / 12%);
+  }
+
+  /* Legacy glows kept for compatibility */
   .glow-cyan {
-    box-shadow: 0 0 20px oklch(0.82 0.1 195 / 25%), 0 0 50px
-      oklch(0.82 0.1 195 / 8%);
+    box-shadow: 0 0 20px oklch(0.78 0.18 210 / 25%), 0 0 50px
+      oklch(0.78 0.18 210 / 8%);
   }
   .glow-orange {
-    box-shadow: 0 0 20px oklch(0.7 0.19 45 / 25%), 0 0 50px
-      oklch(0.7 0.19 45 / 8%);
+    box-shadow: 0 0 20px oklch(0.72 0.22 35 / 25%), 0 0 50px
+      oklch(0.72 0.22 35 / 8%);
   }
   .glow-blue {
     box-shadow: 0 0 20px oklch(0.52 0.22 261 / 25%), 0 0 50px
@@ -145,20 +244,21 @@
     box-shadow: 0 0 20px oklch(0.78 0.16 155 / 25%), 0 0 50px
       oklch(0.78 0.16 155 / 8%);
   }
+
   .border-cyan {
-    border-color: oklch(0.82 0.1 195);
+    border-color: oklch(0.78 0.18 210);
   }
   .border-orange {
-    border-color: oklch(0.7 0.19 45);
+    border-color: oklch(0.72 0.22 35);
   }
   .border-blue {
     border-color: oklch(0.52 0.22 261);
   }
   .text-cyan {
-    color: oklch(0.82 0.1 195);
+    color: oklch(0.78 0.18 210);
   }
   .text-orange {
-    color: oklch(0.7 0.19 45);
+    color: oklch(0.72 0.22 35);
   }
   .text-green {
     color: oklch(0.78 0.16 155);
@@ -167,33 +267,109 @@
     color: oklch(0.87 0.16 84);
   }
   .bg-cyan {
-    background-color: oklch(0.82 0.1 195);
+    background-color: oklch(0.78 0.18 210);
   }
   .bg-orange {
-    background-color: oklch(0.7 0.19 45);
+    background-color: oklch(0.72 0.22 35);
   }
   .bg-blue {
     background-color: oklch(0.52 0.22 261);
   }
-  /* Unified card surface */
+
+  /* Card surfaces */
   .card-dark {
-    background-color: oklch(0.09 0.003 260);
-    border: 1px solid oklch(0.9 0 0 / 7%);
+    background-color: oklch(0.075 0.006 235);
+    border: 1px solid oklch(0.78 0.18 210 / 12%);
   }
   .card-dark-elevated {
-    background-color: oklch(0.105 0.004 260);
-    border: 1px solid oklch(0.9 0 0 / 8%);
+    background-color: oklch(0.09 0.006 235);
+    border: 1px solid oklch(0.78 0.18 210 / 15%);
   }
-  /* Sidebar nav item active state */
+
+  /* Nav active — left glow bar + tint */
   .nav-active {
-    background-color: oklch(0.12 0.004 260);
-    color: oklch(0.97 0.004 260);
+    background-color: oklch(0.78 0.18 210 / 8%);
+    color: oklch(0.97 0.004 220);
+    box-shadow: inset 0 0 12px oklch(0.78 0.18 210 / 8%);
   }
-  /* Bottom input bar blur */
+
+  /* Bottom input bar */
   .input-bar {
-    background-color: oklch(0.075 0.003 260 / 92%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background-color: oklch(0.04 0.005 240 / 94%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid oklch(0.78 0.18 210 / 15%);
+    box-shadow: 0 -4px 24px oklch(0.78 0.18 210 / 6%);
+  }
+
+  /* Blinking cursor dot */
+  .blink-dot {
+    animation: blink 1s step-start infinite;
+  }
+
+  /* Typing bars for chat */
+  .typing-bar {
+    width: 3px;
+    height: 14px;
+    background-color: oklch(0.78 0.18 210);
+    border-radius: 1px;
+    animation: typing-bar-blink 1.2s ease-in-out infinite;
+    will-change: opacity, transform;
+  }
+  .typing-bar:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .typing-bar:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+/* ── Keyframe Animations ─────────────────────────────── */
+@keyframes hud-scan {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(2000%);
+    opacity: 0;
+  }
+}
+
+@keyframes grid-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 40px;
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes typing-bar-blink {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scaleY(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
   }
 }
 
@@ -211,12 +387,12 @@
 @keyframes mic-glow {
   0%,
   100% {
-    box-shadow: 0 0 16px oklch(0.82 0.1 195 / 40%), 0 0 40px
-      oklch(0.82 0.1 195 / 15%);
+    box-shadow: 0 0 16px oklch(0.78 0.18 210 / 40%), 0 0 40px
+      oklch(0.78 0.18 210 / 15%);
   }
   50% {
-    box-shadow: 0 0 32px oklch(0.82 0.1 195 / 70%), 0 0 70px
-      oklch(0.82 0.1 195 / 30%);
+    box-shadow: 0 0 32px oklch(0.78 0.18 210 / 70%), 0 0 70px
+      oklch(0.78 0.18 210 / 30%);
   }
 }
 
@@ -230,6 +406,16 @@
   }
 }
 
+@keyframes send-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.78 0.18 210 / 40%);
+  }
+  50% {
+    box-shadow: 0 0 0 6px oklch(0.78 0.18 210 / 0%);
+  }
+}
+
 .animate-pulse-ring {
   animation: pulse-ring 1.5s ease-out infinite;
 }
@@ -240,4 +426,8 @@
 
 .animate-sound-wave {
   animation: sound-wave 0.8s ease-in-out infinite;
+}
+
+.animate-send-pulse {
+  animation: send-pulse 2s ease-in-out infinite;
 }
