@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import Layout from "./components/Layout";
+import PermissionsGate from "./components/PermissionsGate";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import AboutUsPage from "./pages/AboutUs";
 import AdminSetupPage from "./pages/AdminSetup";
@@ -29,6 +30,9 @@ export type AppPage =
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>("dashboard");
+  const [permissionsGranted, setPermissionsGranted] = useState(
+    () => !!localStorage.getItem("asteroid_permissions_requested"),
+  );
 
   const renderPage = () => {
     switch (currentPage) {
@@ -61,12 +65,16 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-background font-body">
-        <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
-          {renderPage()}
-        </Layout>
-        <Toaster />
-      </div>
+      {!permissionsGranted ? (
+        <PermissionsGate onComplete={() => setPermissionsGranted(true)} />
+      ) : (
+        <div className="min-h-screen bg-background font-body">
+          <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
+            {renderPage()}
+          </Layout>
+          <Toaster />
+        </div>
+      )}
     </ThemeProvider>
   );
 }
