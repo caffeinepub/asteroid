@@ -6,16 +6,20 @@ import {
   Info,
   MapPin,
   MessageSquare,
+  Moon,
   Settings,
   Sparkles,
   Star,
+  Sun,
   User,
   Zap,
 } from "lucide-react";
 import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import type { AppPage } from "../App";
+import { useTheme } from "../contexts/ThemeContext";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import AsteroidLogo from "./AsteroidLogo";
 
 interface LayoutProps {
   children: ReactNode;
@@ -53,6 +57,8 @@ export default function Layout({
 }: LayoutProps) {
   const { login, clear, loginStatus, identity } = useInternetIdentity();
   const isLoggedIn = loginStatus === "success" && !!identity;
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <div className="flex min-h-screen">
@@ -61,49 +67,43 @@ export default function Layout({
         className="hidden md:flex fixed inset-y-0 left-0 z-40 flex-col"
         style={{
           width: "260px",
-          backgroundColor: "oklch(0.055 0.006 235)",
-          borderRight: "1px solid oklch(0.78 0.18 210 / 20%)",
-          boxShadow: "4px 0 24px oklch(0.78 0.18 210 / 6%)",
+          backgroundColor: "oklch(var(--sidebar))",
+          borderRight: "1px solid oklch(var(--sidebar-border))",
+          boxShadow: isDark
+            ? "4px 0 24px oklch(0.78 0.18 210 / 6%)"
+            : "4px 0 24px oklch(0.52 0.18 210 / 8%)",
         }}
         aria-label="Main navigation"
       >
         {/* Logo */}
-        <div className="flex items-center px-5 py-5">
+        <div className="flex items-center px-5 py-6">
           <button
             type="button"
             onClick={() => onNavigate("dashboard")}
-            className="flex items-center group"
+            className="flex items-center gap-3 group"
             aria-label="Go to dashboard"
             data-ocid="nav.link"
           >
-            <img
-              src="/assets/generated/asteroid-spacex-logo-transparent.dim_400x200.png"
-              alt="Asteroid"
-              className="w-32 h-auto object-contain"
-              style={{
-                filter: "drop-shadow(0 0 8px oklch(0.78 0.18 210 / 30%))",
-                transition: "filter 0.2s ease",
-              }}
-            />
+            <AsteroidLogo size={36} />
+            <span
+              className="font-display font-bold text-base tracking-wider"
+              style={{ color: "oklch(var(--sidebar-foreground))" }}
+            >
+              ASTEROID
+            </span>
           </button>
         </div>
 
-        {/* Glowing divider */}
+        {/* Divider */}
         <div
           style={{
             height: "1px",
-            background:
-              "linear-gradient(90deg, transparent, oklch(0.78 0.18 210 / 40%), transparent)",
+            background: isDark
+              ? "linear-gradient(90deg, transparent, oklch(0.78 0.18 210 / 30%), transparent)"
+              : "linear-gradient(90deg, transparent, oklch(0.52 0.18 210 / 30%), transparent)",
             margin: "0 20px 12px",
           }}
         />
-
-        {/* Section label */}
-        <div className="px-5 mb-2">
-          <span className="text-hud" style={{ opacity: 0.5 }}>
-            {"SYS // NAVIGATION"}
-          </span>
-        </div>
 
         {/* Nav items */}
         <nav
@@ -120,7 +120,7 @@ export default function Layout({
                 data-ocid="nav.link"
                 aria-label={`Navigate to ${label}`}
                 aria-current={isActive ? "page" : undefined}
-                className={`relative flex items-center gap-3 px-3 py-2.5 text-sm font-mono font-medium transition-all duration-150 w-full text-left uppercase tracking-widest text-[10px] ${
+                className={`relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-150 w-full text-left ${
                   isActive
                     ? "nav-active"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
@@ -128,7 +128,9 @@ export default function Layout({
                 style={{
                   borderRadius: "0.2rem",
                   boxShadow: isActive
-                    ? "0 0 12px oklch(0.78 0.18 210 / 25%)"
+                    ? isDark
+                      ? "0 0 12px oklch(0.78 0.18 210 / 25%)"
+                      : "0 0 12px oklch(0.52 0.18 210 / 20%)"
                     : undefined,
                 }}
               >
@@ -137,9 +139,12 @@ export default function Layout({
                     layoutId="nav-indicator"
                     className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5"
                     style={{
-                      background:
-                        "linear-gradient(180deg, oklch(0.78 0.18 210 / 0%), oklch(0.78 0.18 210), oklch(0.78 0.18 210 / 0%))",
-                      boxShadow: "0 0 8px oklch(0.78 0.18 210 / 60%)",
+                      background: isDark
+                        ? "linear-gradient(180deg, oklch(0.78 0.18 210 / 0%), oklch(0.78 0.18 210), oklch(0.78 0.18 210 / 0%))"
+                        : "linear-gradient(180deg, oklch(0.52 0.18 210 / 0%), oklch(0.52 0.18 210), oklch(0.52 0.18 210 / 0%))",
+                      boxShadow: isDark
+                        ? "0 0 8px oklch(0.78 0.18 210 / 60%)"
+                        : "0 0 8px oklch(0.52 0.18 210 / 50%)",
                       borderRadius: "0",
                     }}
                     transition={{
@@ -153,7 +158,11 @@ export default function Layout({
                 <Icon
                   className="w-4 h-4 flex-shrink-0"
                   style={{
-                    color: isActive ? "oklch(0.78 0.18 210)" : undefined,
+                    color: isActive
+                      ? isDark
+                        ? "oklch(0.78 0.18 210)"
+                        : "oklch(0.52 0.18 210)"
+                      : undefined,
                   }}
                   aria-hidden
                 />
@@ -165,36 +174,50 @@ export default function Layout({
 
         {/* Bottom */}
         <div className="px-4 pb-5 flex flex-col gap-3">
-          {/* Operator status label */}
-          <div className="mb-1">
-            <span className="text-hud" style={{ opacity: 0.5 }}>
-              OPERATOR STATUS
-            </span>
-          </div>
           <div
             style={{
               height: "1px",
-              background:
-                "linear-gradient(90deg, transparent, oklch(0.78 0.18 210 / 25%), transparent)",
+              background: isDark
+                ? "linear-gradient(90deg, transparent, oklch(0.78 0.18 210 / 25%), transparent)"
+                : "linear-gradient(90deg, transparent, oklch(0.52 0.18 210 / 25%), transparent)",
             }}
           />
+
+          {/* Theme toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            data-ocid="nav.button"
+            className="flex items-center gap-2 px-3 py-2 rounded text-sm font-medium transition-all text-muted-foreground hover:text-foreground hover:bg-secondary w-full"
+            style={{ borderRadius: "0.2rem" }}
+          >
+            {isDark ? (
+              <Sun className="w-4 h-4" aria-hidden />
+            ) : (
+              <Moon className="w-4 h-4" aria-hidden />
+            )}
+            {isDark ? "Light Mode" : "Dark Mode"}
+          </button>
+
           {isLoggedIn ? (
             <div className="flex items-center gap-2.5">
               <div
                 className="w-8 h-8 flex items-center justify-center flex-shrink-0"
                 style={{
-                  backgroundColor: "oklch(0.10 0.006 235)",
-                  border: "1px solid oklch(0.78 0.18 210 / 20%)",
+                  backgroundColor: isDark
+                    ? "oklch(0.10 0.006 235)"
+                    : "oklch(0.88 0.005 225)",
+                  border: isDark
+                    ? "1px solid oklch(0.78 0.18 210 / 20%)"
+                    : "1px solid oklch(0.52 0.18 210 / 20%)",
                   borderRadius: "0.2rem",
                 }}
               >
                 <User className="w-4 h-4 text-muted-foreground" aria-hidden />
               </div>
               <div className="flex-1 min-w-0">
-                <p
-                  className="text-[10px] font-mono uppercase tracking-wider truncate"
-                  style={{ color: "oklch(0.55 0.008 220)" }}
-                >
+                <p className="text-xs font-mono truncate text-muted-foreground">
                   {identity.getPrincipal().toString().slice(0, 14)}&hellip;
                 </p>
               </div>
@@ -204,9 +227,9 @@ export default function Layout({
                 onClick={clear}
                 data-ocid="nav.button"
                 aria-label="Logout"
-                className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground px-2 h-7"
+                className="text-xs text-muted-foreground hover:text-foreground px-2 h-7"
               >
-                LOGOUT
+                Sign out
               </Button>
             </div>
           ) : (
@@ -214,22 +237,25 @@ export default function Layout({
               onClick={login}
               data-ocid="nav.button"
               aria-label="Login with Internet Identity"
-              className="w-full font-mono text-[10px] uppercase tracking-widest font-semibold h-9 transition-all"
+              className="w-full text-sm font-semibold h-9 transition-all"
               style={{
-                backgroundColor: "oklch(0.78 0.18 210)",
-                color: "oklch(0.04 0.005 240)",
+                backgroundColor: isDark
+                  ? "oklch(0.78 0.18 210)"
+                  : "oklch(0.52 0.18 210)",
+                color: isDark
+                  ? "oklch(0.04 0.005 240)"
+                  : "oklch(0.97 0.003 225)",
                 borderRadius: "0.2rem",
-                boxShadow: "0 0 16px oklch(0.78 0.18 210 / 30%)",
+                boxShadow: isDark
+                  ? "0 0 16px oklch(0.78 0.18 210 / 30%)"
+                  : "0 0 16px oklch(0.52 0.18 210 / 25%)",
               }}
               disabled={loginStatus === "logging-in"}
             >
-              {loginStatus === "logging-in" ? "CONNECTING..." : "SIGN IN"}
+              {loginStatus === "logging-in" ? "Connecting..." : "Sign in"}
             </Button>
           )}
-          <p
-            className="text-[10px] font-mono uppercase tracking-wider text-center"
-            style={{ color: "oklch(0.38 0.005 240)" }}
-          >
+          <p className="text-xs text-center text-muted-foreground">
             &copy; {new Date().getFullYear()} &middot;{" "}
             <a
               href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
@@ -252,11 +278,17 @@ export default function Layout({
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-40 flex items-center px-1 py-2 overflow-x-auto"
         style={{
-          backgroundColor: "oklch(0.055 0.006 235 / 95%)",
-          borderTop: "1px solid oklch(0.78 0.18 210 / 20%)",
+          backgroundColor: isDark
+            ? "oklch(0.055 0.006 235 / 95%)"
+            : "oklch(0.91 0.005 225 / 95%)",
+          borderTop: isDark
+            ? "1px solid oklch(0.78 0.18 210 / 20%)"
+            : "1px solid oklch(0.52 0.18 210 / 20%)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          boxShadow: "0 -4px 20px oklch(0.78 0.18 210 / 6%)",
+          boxShadow: isDark
+            ? "0 -4px 20px oklch(0.78 0.18 210 / 6%)"
+            : "0 -4px 20px oklch(0.52 0.18 210 / 8%)",
         }}
         aria-label="Mobile navigation"
       >
@@ -278,20 +310,30 @@ export default function Layout({
                 className="w-4 h-4"
                 style={{
                   color: isActive
-                    ? "oklch(0.78 0.18 210)"
-                    : "oklch(0.45 0.006 240)",
+                    ? isDark
+                      ? "oklch(0.78 0.18 210)"
+                      : "oklch(0.52 0.18 210)"
+                    : isDark
+                      ? "oklch(0.45 0.006 240)"
+                      : "oklch(0.50 0.008 230)",
                   filter: isActive
-                    ? "drop-shadow(0 0 4px oklch(0.78 0.18 210 / 60%))"
+                    ? isDark
+                      ? "drop-shadow(0 0 4px oklch(0.78 0.18 210 / 60%))"
+                      : "drop-shadow(0 0 4px oklch(0.52 0.18 210 / 50%))"
                     : undefined,
                 }}
                 aria-hidden
               />
               <span
-                className="text-[9px] font-mono uppercase tracking-wider"
+                className="text-[9px]"
                 style={{
                   color: isActive
-                    ? "oklch(0.78 0.18 210)"
-                    : "oklch(0.45 0.006 240)",
+                    ? isDark
+                      ? "oklch(0.78 0.18 210)"
+                      : "oklch(0.52 0.18 210)"
+                    : isDark
+                      ? "oklch(0.45 0.006 240)"
+                      : "oklch(0.50 0.008 230)",
                 }}
               >
                 {displayLabel}
@@ -299,6 +341,37 @@ export default function Layout({
             </button>
           );
         })}
+        {/* Theme toggle in mobile nav */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          data-ocid="nav.button"
+          className="flex flex-col items-center gap-0.5 px-2 py-1 transition-all flex-shrink-0 min-w-[44px]"
+          style={{ borderRadius: "0.2rem" }}
+        >
+          {isDark ? (
+            <Sun
+              className="w-4 h-4"
+              style={{ color: "oklch(0.45 0.006 240)" }}
+              aria-hidden
+            />
+          ) : (
+            <Moon
+              className="w-4 h-4"
+              style={{ color: "oklch(0.50 0.008 230)" }}
+              aria-hidden
+            />
+          )}
+          <span
+            className="text-[9px]"
+            style={{
+              color: isDark ? "oklch(0.45 0.006 240)" : "oklch(0.50 0.008 230)",
+            }}
+          >
+            {isDark ? "Light" : "Dark"}
+          </span>
+        </button>
       </nav>
     </div>
   );

@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import Layout from "./components/Layout";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import AboutUsPage from "./pages/AboutUs";
 import AdminSetupPage from "./pages/AdminSetup";
 import ChangelogPage from "./pages/Changelog";
@@ -59,11 +60,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background font-body">
-      <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
-        {renderPage()}
-      </Layout>
-      <Toaster />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-background font-body">
+        <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
+          {renderPage()}
+        </Layout>
+        <Toaster />
+      </div>
+    </ThemeProvider>
   );
 }

@@ -22,8 +22,11 @@ import {
   Loader2,
   MapPin,
   Mic,
+  Moon,
+  Moon as MoonIcon,
   Save,
   ShieldCheck,
+  Sun,
   Vibrate,
   Volume2,
   XCircle,
@@ -33,6 +36,7 @@ import { motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { AppPage } from "../App";
+import { useTheme } from "../contexts/ThemeContext";
 import { useAI } from "../hooks/useAI";
 import { usePreferences, useSavePreferences } from "../hooks/useQueries";
 
@@ -61,6 +65,7 @@ interface DevicePermissions {
 
 export default function SettingsPage({ onNavigate }: SettingsPageProps) {
   const { data: prefs, isLoading } = usePreferences();
+  const { theme, setTheme } = useTheme();
   const savePrefs = useSavePreferences();
   const { checkAIConfigured } = useAI();
 
@@ -214,6 +219,77 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
       </div>
 
       <div className="flex flex-col gap-5">
+        {/* Appearance */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0 }}
+          className="rounded-xl p-6"
+          style={{
+            backgroundColor: "oklch(0.11 0.005 260)",
+            border: "1px solid oklch(0.92 0.005 260 / 15%)",
+          }}
+          aria-labelledby="appearance-heading"
+        >
+          <h2
+            id="appearance-heading"
+            className="font-display font-bold text-sm uppercase tracking-widest text-muted-foreground mb-5 flex items-center gap-2"
+          >
+            <Sun className="w-4 h-4" aria-hidden /> Appearance
+          </h2>
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground mb-1">Color Mode</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                aria-pressed={theme === "dark"}
+                aria-label="Switch to dark mode"
+                data-ocid="settings.toggle"
+                className="flex items-center gap-3 py-3 px-4 rounded-lg text-sm font-semibold transition-all"
+                style={
+                  theme === "dark"
+                    ? {
+                        backgroundColor: "oklch(0.78 0.18 210)",
+                        color: "oklch(0.04 0.005 240)",
+                      }
+                    : {
+                        backgroundColor: "oklch(0.15 0.007 270)",
+                        color: "oklch(0.76 0.009 264)",
+                        border: "1px solid oklch(0.92 0.005 260 / 15%)",
+                      }
+                }
+              >
+                <Moon className="w-4 h-4" aria-hidden />
+                Dark
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                aria-pressed={theme === "light"}
+                aria-label="Switch to light mode"
+                data-ocid="settings.toggle"
+                className="flex items-center gap-3 py-3 px-4 rounded-lg text-sm font-semibold transition-all"
+                style={
+                  theme === "light"
+                    ? {
+                        backgroundColor: "oklch(0.52 0.18 210)",
+                        color: "oklch(0.97 0.003 225)",
+                      }
+                    : {
+                        backgroundColor: "oklch(0.15 0.007 270)",
+                        color: "oklch(0.76 0.009 264)",
+                        border: "1px solid oklch(0.92 0.005 260 / 15%)",
+                      }
+                }
+              >
+                <Sun className="w-4 h-4" aria-hidden />
+                Light
+              </button>
+            </div>
+          </div>
+        </motion.section>
+
         {/* AI Assistant */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}
