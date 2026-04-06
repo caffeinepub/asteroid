@@ -2,25 +2,35 @@ export default function AsteroidLogo({ size = 36 }: { size?: number }) {
   const scale = size / 36;
   return (
     <svg
-      viewBox="0 0 36 42"
+      viewBox="0 0 36 36"
       width={36 * scale}
-      height={42 * scale}
+      height={36 * scale}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Asteroid logo"
+      aria-label="Quarq/AI logo"
     >
-      <title>Asteroid</title>
-      {/* Left stroke of A */}
-      <path
-        d="M4 40 L18 4 L32 40"
+      <title>Quarq/AI</title>
+      {/* Circle ring of Q */}
+      <circle
+        cx="16"
+        cy="16"
+        r="10"
+        stroke="oklch(0.78 0.18 210)"
+        strokeWidth="2.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* Diagonal tail of Q */}
+      <line
+        x1="23"
+        y1="23"
+        x2="30"
+        y2="31"
         stroke="oklch(0.78 0.18 210)"
         strokeWidth="2.5"
         strokeLinecap="round"
-        strokeLinejoin="round"
       />
-      {/* Dot at crossbar position — replaces horizontal line */}
-      <circle cx="18" cy="26" r="2.5" fill="oklch(0.78 0.18 210)" />
     </svg>
   );
 }

@@ -21,7 +21,7 @@ const VALUES = [
     emoji: "💪",
     title: "Empowerment",
     description:
-      "We build technology that fosters independence, not dependency. Asteroid gives users the tools to live life on their own terms.",
+      "We build technology that fosters independence, not dependency. Quarq/AI gives users the tools to live life on their own terms.",
     color: "oklch(0.78 0.16 155)",
     bgColor: "oklch(0.78 0.16 155 / 6%)",
     borderColor: "oklch(0.78 0.16 155 / 25%)",
@@ -54,7 +54,7 @@ const TEAM = [
     initial: "S",
     name: "Samyo Debnath",
     role: "CEO & Founder",
-    bio: "Driven by a vision to make AI-powered assistance universally accessible, Samyo founded Asteroid to bridge the gap between emerging technology and those who need it most. His unwavering belief that great technology should empower every person — regardless of physical ability — shapes every decision at Asteroid.",
+    bio: "Driven by a vision to make AI-powered assistance universally accessible, Samyo founded Quarq/AI to bridge the gap between emerging technology and those who need it most. His unwavering belief that great technology should empower every person — regardless of physical ability — shapes every decision at Quarq/AI.",
     accentColor: "oklch(0.78 0.18 210)",
     roleColor: "oklch(0.78 0.18 210 / 12%)",
     roleFontColor: "oklch(0.78 0.18 210)",
@@ -63,7 +63,7 @@ const TEAM = [
     initial: "R",
     name: "Ritam Paul",
     role: "CFO",
-    bio: "Ritam brings sharp financial acumen and strategic insight to Asteroid, ensuring the company achieves sustainable growth while keeping the mission of accessibility at the heart of every decision. He believes that purpose-driven companies are the most resilient, and he works tirelessly to ensure Asteroid thrives for the long haul.",
+    bio: "Ritam brings sharp financial acumen and strategic insight to Quarq/AI, ensuring the company achieves sustainable growth while keeping the mission of accessibility at the heart of every decision. He believes that purpose-driven companies are the most resilient, and he works tirelessly to ensure Quarq/AI thrives for the long haul.",
     accentColor: "oklch(0.78 0.16 155)",
     roleColor: "oklch(0.78 0.16 155 / 12%)",
     roleFontColor: "oklch(0.78 0.16 155)",
@@ -91,7 +91,7 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
           </div>
           <div className="mb-4">
             <span className="text-hud" style={{ opacity: 0.6 }}>
-              {"MISSION BRIEF // ASTEROID"}
+              {"MISSION BRIEF // QUARQ/AI"}
             </span>
           </div>
           <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground tracking-tight mb-3">
@@ -102,7 +102,7 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
                 textShadow: "0 0 20px oklch(0.78 0.18 210 / 30%)",
               }}
             >
-              Asteroid
+              Quarq/AI
             </span>
           </h1>
           <p
@@ -115,7 +115,7 @@ export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
             className="text-base leading-relaxed max-w-xl mx-auto"
             style={{ color: "oklch(0.68 0.006 240)" }}
           >
-            Asteroid is an accessibility-first AI assistant designed to empower
+            Quarq/AI is an accessibility-first AI assistant designed to empower
             blind and disabled users in daily life. We combine conversational
             AI, real-time computer vision, and GPS navigation — all operable
             hands-free, with your voice.

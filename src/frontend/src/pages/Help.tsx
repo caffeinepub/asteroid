@@ -18,7 +18,7 @@ const STEPS = [
     number: "01",
     icon: "🚀",
     title: "Open the App",
-    body: "Asteroid runs entirely in your browser — no install needed. Chrome or Safari on mobile gives you full camera, mic, and GPS access.",
+    body: "Quarq/AI runs entirely in your browser — no install needed. Chrome or Safari on mobile gives you full camera, mic, and GPS access.",
   },
   {
     number: "02",
@@ -63,17 +63,17 @@ const FAQS = [
   {
     question: "Is my data private?",
     answer:
-      "Yes. Asteroid runs on the Internet Computer blockchain. Your AI API key is stored in the backend canister and is never exposed to the browser or third parties. Task data is stored on-chain and is only accessible to you.",
+      "Yes. Quarq/AI runs on the Internet Computer blockchain. Your AI API key is stored in the backend canister and is never exposed to the browser or third parties. Task data is stored on-chain and is only accessible to you.",
   },
   {
-    question: "Can I use Asteroid offline?",
+    question: "Can I use Quarq/AI offline?",
     answer:
       "Core features like tasks and the navigation UI work offline. AI chat requires an active internet connection. The COCO-SSD model for GravityMode needs to download once on first use (about 5 MB), then it runs entirely on your device.",
   },
   {
     question: "How do I get a free AI key?",
     answer:
-      "Two great options: Google Gemini at aistudio.google.com — free tier, no credit card needed, takes about 2 minutes. Groq at console.groq.com — free tier with fast inference on open models (Llama 3, Mixtral). Both work immediately with the Asteroid admin setup screen.",
+      "Two great options: Google Gemini at aistudio.google.com — free tier, no credit card needed, takes about 2 minutes. Groq at console.groq.com — free tier with fast inference on open models (Llama 3, Mixtral). Both work immediately with the Quarq/AI admin setup screen.",
   },
 ];
 
@@ -112,7 +112,7 @@ export default function HelpPage({ onNavigate }: HelpProps) {
             style={{ color: "oklch(0.68 0.006 260)" }}
           >
             Everything you need to get started, troubleshoot, and make the most
-            of Asteroid.
+            of Quarq/AI.
           </p>
         </motion.header>
 

@@ -89,7 +89,7 @@ export default function Layout({
               className="font-display font-bold text-base tracking-wider"
               style={{ color: "oklch(var(--sidebar-foreground))" }}
             >
-              ASTEROID
+              QUARQ/AI
             </span>
           </button>
         </div>

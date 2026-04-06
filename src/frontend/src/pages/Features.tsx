@@ -104,7 +104,7 @@ export default function FeaturesPage({ onNavigate }: FeaturesProps) {
             className="text-xs font-semibold uppercase tracking-widest mb-4"
             style={{ color: "oklch(0.82 0.10 195)" }}
           >
-            What Asteroid Can Do
+            What Quarq/AI Can Do
           </p>
           <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground tracking-tight mb-5">
             Everything you need, <br className="hidden sm:block" />
