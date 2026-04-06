@@ -25,13 +25,13 @@ const QUICK_ACTIONS: {
   },
   {
     icon: Zap,
-    label: "GravityMode",
+    label: "GluonMode",
     page: "gravity",
     color: "oklch(0.72 0.22 35)",
   },
   {
     icon: MapPin,
-    label: "EarthMode",
+    label: "NucleusMode",
     page: "earth",
     color: "oklch(0.52 0.22 261)",
   },

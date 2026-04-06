@@ -35,7 +35,7 @@ const FEATURES: {
   },
   {
     icon: Eye,
-    title: "GravityMode",
+    title: "GluonMode",
     page: "gravity",
     description:
       "Real-time object detection powered by TensorFlow.js COCO-SSD, running entirely in your browser. Live bounding boxes, HUD overlays, and voice announcements keep you aware of your environment.",
@@ -45,7 +45,7 @@ const FEATURES: {
   },
   {
     icon: MapPin,
-    title: "EarthMode",
+    title: "NucleusMode",
     page: "earth",
     description:
       "GPS-powered navigation with step-by-step directions. Designed for walking and public spaces, with real-time location tracking and outdoor spatial awareness.",

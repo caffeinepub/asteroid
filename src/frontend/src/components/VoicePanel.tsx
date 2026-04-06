@@ -53,21 +53,23 @@ function handleLocalCommand(
     return "Opening your tasks. You have a few items waiting for your attention!";
   }
   if (
+    lower.includes("gluon") ||
     lower.includes("gravity") ||
     lower.includes("camera navigation") ||
     lower.includes("obstacle")
   ) {
     setTimeout(() => onNavigate("gravity"), 500);
-    return "Activating GravityMode. I'll start scanning your environment for obstacles and hazards.";
+    return "Activating GluonMode. I'll start scanning your environment for obstacles and hazards.";
   }
   if (
     lower.includes("navigate") ||
+    lower.includes("nucleus") ||
     lower.includes("earth") ||
     lower.includes("directions") ||
     lower.includes("route")
   ) {
     setTimeout(() => onNavigate("earth"), 500);
-    return "Opening EarthMode. Where would you like to go? I can provide turn-by-turn guidance.";
+    return "Opening NucleusMode. Where would you like to go? I can provide turn-by-turn guidance.";
   }
   if (lower.includes("settings") || lower.includes("preferences")) {
     setTimeout(() => onNavigate("settings"), 500);

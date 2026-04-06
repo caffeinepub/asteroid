@@ -479,13 +479,13 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
                 {
                   key: "camera" as const,
                   label: "Camera",
-                  description: "Required for GravityMode obstacle detection",
+                  description: "Required for GluonMode obstacle detection",
                   icon: Camera,
                 },
                 {
                   key: "location" as const,
                   label: "Location",
-                  description: "Required for EarthMode GPS navigation",
+                  description: "Required for NucleusMode GPS navigation",
                   icon: MapPin,
                 },
               ] as const
@@ -702,7 +702,7 @@ export default function SettingsPage({ onNavigate }: SettingsPageProps) {
             <Zap className="w-4 h-4" aria-hidden /> Default Mode
           </h2>
           <div className="grid grid-cols-3 gap-3">
-            {["Standard", "GravityMode", "EarthMode"].map((m) => (
+            {["Standard", "GluonMode", "NucleusMode"].map((m) => (
               <button
                 key={m}
                 type="button"

@@ -52,12 +52,12 @@ const FAQS = [
   {
     question: "What browsers are supported?",
     answer:
-      "Chrome and Safari on mobile provide full support for the camera, microphone, and GPS features. Desktop Chrome and Firefox work for most features. For the best GravityMode and EarthMode experience, use Chrome on Android or Safari on iOS.",
+      "Chrome and Safari on mobile provide full support for the camera, microphone, and GPS features. Desktop Chrome and Firefox work for most features. For the best GluonMode and NucleusMode experience, use Chrome on Android or Safari on iOS.",
   },
   {
-    question: "How does GravityMode work?",
+    question: "How does GluonMode work?",
     answer:
-      "GravityMode uses TensorFlow.js with the COCO-SSD model to run real-time object detection entirely in your browser — no server required. It detects 80+ object types (people, furniture, vehicles, and more), draws bounding boxes on the live camera feed, and announces newly detected objects via voice.",
+      "GluonMode uses TensorFlow.js with the COCO-SSD model to run real-time object detection entirely in your browser — no server required. It detects 80+ object types (people, furniture, vehicles, and more), draws bounding boxes on the live camera feed, and announces newly detected objects via voice.",
   },
   {
     question: "How do I add tasks?",
@@ -67,7 +67,7 @@ const FAQS = [
   {
     question: "What voice commands can I use?",
     answer:
-      'Supported commands include: "add task [name]", "start GravityMode", "start EarthMode", "open chat", "open settings", and plain natural language questions. The AI assistant understands conversational phrasing too — just speak naturally.',
+      'Supported commands include: "add task [name]", "start GluonMode", "start NucleusMode", "open chat", "open settings", and plain natural language questions. The AI assistant understands conversational phrasing too — just speak naturally.',
   },
   {
     question: "Is my data private?",
@@ -77,7 +77,7 @@ const FAQS = [
   {
     question: "Can I use Quarq/AI offline?",
     answer:
-      "Core features like tasks and the navigation UI work offline. AI chat requires an active internet connection. The COCO-SSD model for GravityMode needs to download once on first use (about 5 MB), then it runs entirely on your device.",
+      "Core features like tasks and the navigation UI work offline. AI chat requires an active internet connection. The COCO-SSD model for GluonMode needs to download once on first use (about 5 MB), then it runs entirely on your device.",
   },
   {
     question: "How do I get a free AI key?",
@@ -90,14 +90,14 @@ const FAQS = [
       "SambaNova integration is planned for a future update. Currently the app supports OpenAI, Google Gemini, Groq, and Cohere — all of which have free tiers.",
   },
   {
-    question: "How do I get the most out of GravityMode?",
+    question: "How do I get the most out of GluonMode?",
     answer:
       "Hold your phone at chest height pointing forward for the best field of view. Make sure you're in a well-lit environment for accurate detection. The model detects 80+ object types including people, furniture, and vehicles. Voice announcements will tell you what's detected so you don't need to look at the screen.",
   },
   {
-    question: "How does EarthMode help with navigation?",
+    question: "How does NucleusMode help with navigation?",
     answer:
-      "EarthMode uses your device GPS to provide step-by-step walking directions. Grant location permission when prompted. It works best outdoors in open spaces. Use it alongside a white cane or guide dog — it's a supplement, not a replacement.",
+      "NucleusMode uses your device GPS to provide step-by-step walking directions. Grant location permission when prompted. It works best outdoors in open spaces. Use it alongside a white cane or guide dog — it's a supplement, not a replacement.",
   },
   {
     question: "What is Offline Mode in Chat?",
@@ -132,10 +132,10 @@ const VOICE_COMMANDS = [
   { command: "add task [name]", description: "Add a new task" },
   { command: "open chat", description: "Open Aster chat" },
   {
-    command: "start GravityMode",
+    command: "start GluonMode",
     description: "Launch camera obstacle detection",
   },
-  { command: "start EarthMode", description: "Launch GPS navigation" },
+  { command: "start NucleusMode", description: "Launch GPS navigation" },
   { command: "open settings", description: "Go to Settings" },
   { command: "help", description: "Open this Help page" },
   {

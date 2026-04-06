@@ -27,9 +27,9 @@ const VERSIONS: {
   {
     version: "v17",
     date: "Mar 2026",
-    headline: "GravityMode Real AI Vision",
+    headline: "GluonMode Real AI Vision",
     changes: [
-      "GravityMode with COCO-SSD deployed to production",
+      "GluonMode with COCO-SSD deployed to production",
       "Live camera feed with bounding boxes and object labels",
       "Voice announcements for detected objects",
     ],
@@ -159,8 +159,8 @@ const VERSIONS: {
     headline: "Real Device Integration",
     changes: [
       "Live speech recognition via device microphone",
-      "Camera access for GravityMode",
-      "GPS and location for EarthMode navigation",
+      "Camera access for GluonMode",
+      "GPS and location for NucleusMode navigation",
       "Haptic feedback for key events",
       "Device Permissions panel added",
     ],

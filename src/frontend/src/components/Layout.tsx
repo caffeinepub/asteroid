@@ -35,8 +35,8 @@ const NAV_ITEMS: {
 }[] = [
   { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "chat", label: "Chat", icon: MessageSquare },
-  { id: "gravity", label: "GravityMode", mobileLabel: "Gravity", icon: Zap },
-  { id: "earth", label: "EarthMode", mobileLabel: "Earth", icon: MapPin },
+  { id: "gravity", label: "GluonMode", mobileLabel: "Gluon", icon: Zap },
+  { id: "earth", label: "NucleusMode", mobileLabel: "Nucleus", icon: MapPin },
   { id: "tasks", label: "Tasks", icon: CheckSquare },
   { id: "features", label: "Features", icon: Star },
   { id: "help", label: "Help", icon: HelpCircle },

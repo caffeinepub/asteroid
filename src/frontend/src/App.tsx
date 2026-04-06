@@ -8,10 +8,10 @@ import AdminSetupPage from "./pages/AdminSetup";
 import ChangelogPage from "./pages/Changelog";
 import ChatPage from "./pages/Chat";
 import Dashboard from "./pages/Dashboard";
-import EarthModePage from "./pages/EarthMode";
 import FeaturesPage from "./pages/Features";
-import GravityModePage from "./pages/GravityMode";
+import GluonModePage from "./pages/GluonMode";
 import HelpPage from "./pages/Help";
+import NucleusModePage from "./pages/NucleusMode";
 import SettingsPage from "./pages/Settings";
 import TasksPage from "./pages/Tasks";
 import WelcomeSplash from "./pages/WelcomeSplash";
@@ -50,9 +50,9 @@ export default function App() {
       case "chat":
         return <ChatPage onNavigate={setCurrentPage} />;
       case "gravity":
-        return <GravityModePage onNavigate={setCurrentPage} />;
+        return <GluonModePage onNavigate={setCurrentPage} />;
       case "earth":
-        return <EarthModePage onNavigate={setCurrentPage} />;
+        return <NucleusModePage onNavigate={setCurrentPage} />;
       case "tasks":
         return <TasksPage onNavigate={setCurrentPage} />;
       case "about":

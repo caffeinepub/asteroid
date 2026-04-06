@@ -27,7 +27,7 @@ const PERM_ITEMS = [
   {
     key: "camera" as const,
     label: "Camera",
-    sublabel: "Object detection & GravityMode",
+    sublabel: "Object detection & GluonMode",
     Icon: Camera,
   },
   {
@@ -39,7 +39,7 @@ const PERM_ITEMS = [
   {
     key: "location" as const,
     label: "Location",
-    sublabel: "EarthMode GPS navigation",
+    sublabel: "NucleusMode GPS navigation",
     Icon: MapPin,
   },
 ];
