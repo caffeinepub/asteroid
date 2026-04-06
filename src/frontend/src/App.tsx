@@ -14,6 +14,7 @@ import GravityModePage from "./pages/GravityMode";
 import HelpPage from "./pages/Help";
 import SettingsPage from "./pages/Settings";
 import TasksPage from "./pages/Tasks";
+import WelcomeSplash from "./pages/WelcomeSplash";
 
 export type AppPage =
   | "dashboard"
@@ -30,9 +31,17 @@ export type AppPage =
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>("dashboard");
+  const [showSplash, setShowSplash] = useState(
+    () => !localStorage.getItem("quarq_splash_shown"),
+  );
   const [permissionsGranted, setPermissionsGranted] = useState(
     () => !!localStorage.getItem("asteroid_permissions_requested"),
   );
+
+  const handleSplashComplete = () => {
+    localStorage.setItem("quarq_splash_shown", "1");
+    setShowSplash(false);
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -65,7 +74,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      {!permissionsGranted ? (
+      {showSplash ? (
+        <WelcomeSplash onComplete={handleSplashComplete} />
+      ) : !permissionsGranted ? (
         <PermissionsGate onComplete={() => setPermissionsGranted(true)} />
       ) : (
         <div className="min-h-screen bg-background font-body">

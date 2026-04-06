@@ -49,6 +49,37 @@ const VALUES = [
   },
 ];
 
+const CERTIFICATIONS = [
+  {
+    company: "Google",
+    badge: "Certified Partner",
+    color: "oklch(0.75 0.15 145)",
+    logoSrc: "/assets/generated/google-logo-transparent.dim_200x80.png",
+    logoAlt: "Google logo",
+  },
+  {
+    company: "Meta",
+    badge: "F500 Partner",
+    color: "oklch(0.65 0.18 255)",
+    logoSrc: "/assets/generated/meta-logo-transparent.dim_200x80.png",
+    logoAlt: "Meta logo",
+  },
+  {
+    company: "Perplexity Sonar",
+    badge: "AI Partner",
+    color: "oklch(0.72 0.20 195)",
+    logoSrc: "/assets/generated/perplexity-logo-transparent.dim_200x80.png",
+    logoAlt: "Perplexity Sonar logo",
+  },
+  {
+    company: "Anthropic",
+    badge: "AI Partner",
+    color: "oklch(0.72 0.12 50)",
+    logoSrc: "/assets/generated/anthropic-logo-transparent.dim_200x80.png",
+    logoAlt: "Anthropic logo",
+  },
+];
+
 const TEAM = [
   {
     initial: "S",
@@ -70,330 +101,523 @@ const TEAM = [
   },
 ];
 
+const STAR_POSITIONS = [
+  { id: "s1", top: "8%", left: "5%", size: 5, opacity: 0.45, delay: 0 },
+  { id: "s2", top: "14%", left: "88%", size: 4, opacity: 0.35, delay: 0.8 },
+  { id: "s3", top: "22%", left: "72%", size: 6, opacity: 0.5, delay: 1.4 },
+  { id: "s4", top: "31%", left: "15%", size: 4, opacity: 0.3, delay: 2.1 },
+  { id: "s5", top: "40%", left: "92%", size: 5, opacity: 0.4, delay: 0.4 },
+  { id: "s6", top: "52%", left: "8%", size: 4, opacity: 0.55, delay: 1.7 },
+  { id: "s7", top: "58%", left: "55%", size: 6, opacity: 0.35, delay: 2.5 },
+  { id: "s8", top: "67%", left: "80%", size: 5, opacity: 0.45, delay: 0.9 },
+  { id: "s9", top: "74%", left: "30%", size: 4, opacity: 0.3, delay: 1.2 },
+  { id: "s10", top: "82%", left: "95%", size: 5, opacity: 0.5, delay: 0.3 },
+  { id: "s11", top: "88%", left: "12%", size: 4, opacity: 0.4, delay: 1.9 },
+  { id: "s12", top: "94%", left: "65%", size: 6, opacity: 0.35, delay: 0.6 },
+  { id: "s13", top: "4%", left: "42%", size: 5, opacity: 0.45, delay: 2.8 },
+  { id: "s14", top: "47%", left: "48%", size: 4, opacity: 0.25, delay: 3.2 },
+];
+
 export default function AboutUsPage({ onNavigate: _onNavigate }: AboutUsProps) {
   return (
     <div
-      className="min-h-screen px-5 sm:px-8 pt-8 pb-20"
+      className="relative min-h-screen"
       aria-label="About Us page"
       data-ocid="about.page"
     >
-      <div className="max-w-3xl mx-auto">
-        {/* Hero */}
-        <motion.header
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55 }}
-          className="text-center mb-16"
-          aria-label="Hero section"
-        >
-          <div className="flex justify-center mb-6">
-            <AsteroidLogo size={72} />
-          </div>
-          <div className="mb-4">
-            <span className="text-hud" style={{ opacity: 0.6 }}>
-              {"MISSION BRIEF // QUARQ/AI"}
-            </span>
-          </div>
-          <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground tracking-tight mb-3">
-            About{" "}
-            <span
-              style={{
-                color: "oklch(0.78 0.18 210)",
-                textShadow: "0 0 20px oklch(0.78 0.18 210 / 30%)",
-              }}
-            >
-              Quarq/AI
-            </span>
-          </h1>
-          <p
-            className="text-sm font-mono uppercase tracking-widest mb-5"
-            style={{ color: "oklch(0.55 0.008 220)" }}
-          >
-            The Everything Assistant
-          </p>
-          <p
-            className="text-base leading-relaxed max-w-xl mx-auto"
-            style={{ color: "oklch(0.68 0.006 240)" }}
-          >
-            Quarq/AI is an accessibility-first AI assistant designed to empower
-            blind and disabled users in daily life. We combine conversational
-            AI, real-time computer vision, and GPS navigation — all operable
-            hands-free, with your voice.
-          </p>
-        </motion.header>
-
-        {/* Mission */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mb-6 p-7 hud-border clip-corner"
+      {/* ── Animated Background ── */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 overflow-hidden pointer-events-none"
+      >
+        {/* Primary radial gradient blob */}
+        <div
           style={{
-            backgroundColor: "oklch(0.075 0.006 235)",
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 20%, oklch(0.12 0.04 260 / 70%) 0%, transparent 70%)",
           }}
-          aria-labelledby="mission-heading"
-          data-ocid="about.section"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <span
-              className="text-hud"
-              style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
-            >
-              {"01 //"}
-            </span>
-            <h2
-              id="mission-heading"
-              className="font-display font-bold text-2xl text-foreground tracking-tight"
-            >
-              Our Mission
-            </h2>
-          </div>
-          <p
-            className="text-base leading-relaxed"
-            style={{ color: "oklch(0.72 0.006 240)" }}
-          >
-            To democratize access to intelligent assistance for everyone —
-            regardless of physical ability. We believe cutting-edge AI tools
-            should be universally available: hands-free, voice-first, and
-            completely accessible. No barriers. No exceptions.
-          </p>
-        </motion.section>
-
-        {/* Vision */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.18 }}
-          className="mb-10 p-7 hud-border clip-corner"
+        />
+        {/* Secondary accent blob */}
+        <div
           style={{
-            backgroundColor: "oklch(0.075 0.006 235)",
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 55% 45% at 80% 75%, oklch(0.10 0.05 290 / 50%) 0%, transparent 65%)",
           }}
-          aria-labelledby="vision-heading"
-          data-ocid="about.section"
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <span
-              className="text-hud"
-              style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
-            >
-              {"02 //"}
-            </span>
-            <h2
-              id="vision-heading"
-              className="font-display font-bold text-2xl text-foreground tracking-tight"
-            >
-              Our Vision
-            </h2>
-          </div>
-          <p
-            className="text-base leading-relaxed"
-            style={{ color: "oklch(0.72 0.006 240)" }}
-          >
-            A world where no one is left behind by technology. A world where
-            blind and disabled individuals navigate daily life with the same
-            confidence, independence, and capability as anyone else. We envision
-            a future where the gap between emerging technology and those who
-            need it most is permanently closed.
-          </p>
-        </motion.section>
-
-        {/* Values */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.26 }}
-          className="mb-12"
-          aria-labelledby="values-heading"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <span
-              className="text-hud"
-              style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
-            >
-              {"03 //"}
-            </span>
-            <h2
-              id="values-heading"
-              className="font-display font-bold text-2xl text-foreground tracking-tight"
-            >
-              Our Values
-            </h2>
-          </div>
+        />
+        {/* Animated grid */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(oklch(0.78 0.18 210 / 4%) 1px, transparent 1px), linear-gradient(90deg, oklch(0.78 0.18 210 / 4%) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+        {/* Star dots */}
+        {STAR_POSITIONS.map((star) => (
           <div
-            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-            data-ocid="about.panel"
-          >
-            {VALUES.map(
-              (
-                {
-                  emoji,
-                  title,
-                  description,
-                  color,
-                  bgColor,
-                  borderColor,
-                  glowColor,
-                },
-                i,
-              ) => (
-                <motion.div
-                  key={title}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.07 }}
-                  className="p-5 clip-corner"
-                  style={{
-                    backgroundColor: bgColor,
-                    border: `1px solid ${borderColor}`,
-                    boxShadow: `0 0 20px ${glowColor}`,
-                  }}
-                  data-ocid="about.card"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xl" aria-hidden>
-                      {emoji}
-                    </span>
-                    <h3
-                      className="font-mono font-semibold text-sm uppercase tracking-wider"
-                      style={{ color }}
-                    >
-                      {title}
-                    </h3>
-                  </div>
-                  <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: "oklch(0.70 0.005 240)" }}
-                  >
-                    {description}
-                  </p>
-                </motion.div>
-              ),
-            )}
-          </div>
-        </motion.section>
-
-        {/* Team */}
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.34 }}
-          aria-labelledby="team-heading"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <span
-              className="text-hud"
-              style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
-            >
-              {"04 //"}
-            </span>
-            <h2
-              id="team-heading"
-              className="font-display font-bold text-2xl text-foreground tracking-tight"
-            >
-              Meet the Team
-            </h2>
-          </div>
-          <div className="flex flex-col gap-5">
-            {TEAM.map(
-              (
-                {
-                  initial,
-                  name,
-                  role,
-                  bio,
-                  accentColor,
-                  roleColor,
-                  roleFontColor,
-                },
-                i,
-              ) => (
-                <motion.article
-                  key={name}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.45, delay: 0.38 + i * 0.1 }}
-                  className="p-6 clip-corner"
-                  style={{
-                    backgroundColor: "oklch(0.075 0.006 235)",
-                    border: `1px solid ${accentColor}20`,
-                    boxShadow: `0 0 20px ${accentColor}08`,
-                  }}
-                  aria-label={`${name}, ${role}`}
-                  data-ocid="about.card"
-                >
-                  <div className="flex items-start gap-5">
-                    {/* Avatar - sharp square */}
-                    <div
-                      className="w-16 h-16 flex items-center justify-center flex-shrink-0 font-display font-bold text-2xl"
-                      style={{
-                        backgroundColor: accentColor,
-                        color: "oklch(0.04 0.005 240)",
-                        borderRadius: "0.2rem",
-                        boxShadow: `0 0 16px ${accentColor}40`,
-                      }}
-                      aria-hidden
-                    >
-                      {initial}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 className="font-display font-bold text-lg text-foreground">
-                          {name}
-                        </h3>
-                        <span
-                          className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5"
-                          style={{
-                            backgroundColor: roleColor,
-                            color: roleFontColor,
-                            borderRadius: "0.1rem",
-                            border: `1px solid ${roleFontColor}30`,
-                          }}
-                        >
-                          {role}
-                        </span>
-                      </div>
-                      <p
-                        className="text-sm leading-relaxed"
-                        style={{ color: "oklch(0.68 0.006 240)" }}
-                      >
-                        {bio}
-                      </p>
-                    </div>
-                  </div>
-                </motion.article>
-              ),
-            )}
-          </div>
-        </motion.section>
-
-        {/* Footer attribution */}
-        <footer
-          className="mt-16 pt-6 text-center"
-          style={{
-            borderTopWidth: "1px",
-            borderTopStyle: "solid",
-            borderTopColor: "oklch(0.78 0.18 210 / 15%)",
-          }}
-        >
-          <p
-            className="text-[10px] font-mono uppercase tracking-wider"
-            style={{ color: "oklch(0.38 0.005 240)" }}
-          >
-            &copy; {new Date().getFullYear()} &middot; Built with ❤️ using{" "}
-            <a
-              href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-cyan transition-colors"
-              style={{ color: "oklch(0.48 0.005 240)" }}
-            >
-              caffeine.ai
-            </a>
-          </p>
-        </footer>
+            key={star.id}
+            className="about-star"
+            style={{
+              position: "absolute",
+              top: star.top,
+              left: star.left,
+              width: star.size,
+              height: star.size,
+              borderRadius: "50%",
+              backgroundColor: "oklch(0.90 0.12 210)",
+              opacity: star.opacity,
+              animationDelay: `${star.delay}s`,
+            }}
+          />
+        ))}
       </div>
+
+      {/* ── Page Content ── */}
+      <div className="relative z-10 px-5 sm:px-8 pt-8 pb-20">
+        <div className="max-w-3xl mx-auto">
+          {/* Hero */}
+          <motion.header
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55 }}
+            className="text-center mb-16"
+            aria-label="Hero section"
+          >
+            <div className="flex justify-center mb-6">
+              <AsteroidLogo size={72} />
+            </div>
+            <div className="mb-4">
+              <span className="text-hud" style={{ opacity: 0.6 }}>
+                {"MISSION BRIEF // QUARQ/AI"}
+              </span>
+            </div>
+            <h1 className="font-display font-bold text-4xl sm:text-5xl text-foreground tracking-tight mb-3">
+              About{" "}
+              <span
+                style={{
+                  color: "oklch(0.78 0.18 210)",
+                  textShadow: "0 0 20px oklch(0.78 0.18 210 / 30%)",
+                }}
+              >
+                Quarq/AI
+              </span>
+            </h1>
+            <p
+              className="text-sm font-mono uppercase tracking-widest mb-5"
+              style={{ color: "oklch(0.55 0.008 220)" }}
+            >
+              The Everything Assistant
+            </p>
+            <p
+              className="text-base leading-relaxed max-w-xl mx-auto"
+              style={{ color: "oklch(0.68 0.006 240)" }}
+            >
+              Quarq/AI is an accessibility-first AI assistant designed to
+              empower blind and disabled users in daily life. We combine
+              conversational AI, real-time computer vision, and GPS navigation —
+              all operable hands-free, with your voice.
+            </p>
+          </motion.header>
+
+          {/* Mission */}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-6 p-7 hud-border clip-corner"
+            style={{
+              backgroundColor: "oklch(0.075 0.006 235 / 80%)",
+            }}
+            aria-labelledby="mission-heading"
+            data-ocid="about.section"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className="text-hud"
+                style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
+              >
+                {"01 //"}
+              </span>
+              <h2
+                id="mission-heading"
+                className="font-display font-bold text-2xl text-foreground tracking-tight"
+              >
+                Our Mission
+              </h2>
+            </div>
+            <p
+              className="text-base leading-relaxed"
+              style={{ color: "oklch(0.72 0.006 240)" }}
+            >
+              To democratize access to intelligent assistance for everyone —
+              regardless of physical ability. We believe cutting-edge AI tools
+              should be universally available: hands-free, voice-first, and
+              completely accessible. No barriers. No exceptions.
+            </p>
+          </motion.section>
+
+          {/* Vision */}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.18 }}
+            className="mb-10 p-7 hud-border clip-corner"
+            style={{
+              backgroundColor: "oklch(0.075 0.006 235 / 80%)",
+            }}
+            aria-labelledby="vision-heading"
+            data-ocid="about.section"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span
+                className="text-hud"
+                style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
+              >
+                {"02 //"}
+              </span>
+              <h2
+                id="vision-heading"
+                className="font-display font-bold text-2xl text-foreground tracking-tight"
+              >
+                Our Vision
+              </h2>
+            </div>
+            <p
+              className="text-base leading-relaxed"
+              style={{ color: "oklch(0.72 0.006 240)" }}
+            >
+              A world where no one is left behind by technology. A world where
+              blind and disabled individuals navigate daily life with the same
+              confidence, independence, and capability as anyone else. We
+              envision a future where the gap between emerging technology and
+              those who need it most is permanently closed.
+            </p>
+          </motion.section>
+
+          {/* Values */}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.26 }}
+            className="mb-12"
+            aria-labelledby="values-heading"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <span
+                className="text-hud"
+                style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
+              >
+                {"03 //"}
+              </span>
+              <h2
+                id="values-heading"
+                className="font-display font-bold text-2xl text-foreground tracking-tight"
+              >
+                Our Values
+              </h2>
+            </div>
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              data-ocid="about.panel"
+            >
+              {VALUES.map(
+                (
+                  {
+                    emoji,
+                    title,
+                    description,
+                    color,
+                    bgColor,
+                    borderColor,
+                    glowColor,
+                  },
+                  i,
+                ) => (
+                  <motion.div
+                    key={title}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.3 + i * 0.07 }}
+                    className="p-5 clip-corner"
+                    style={{
+                      backgroundColor: bgColor,
+                      border: `1px solid ${borderColor}`,
+                      boxShadow: `0 0 20px ${glowColor}`,
+                    }}
+                    data-ocid="about.card"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xl" aria-hidden>
+                        {emoji}
+                      </span>
+                      <h3
+                        className="font-mono font-semibold text-sm uppercase tracking-wider"
+                        style={{ color }}
+                      >
+                        {title}
+                      </h3>
+                    </div>
+                    <p
+                      className="text-sm leading-relaxed"
+                      style={{ color: "oklch(0.70 0.005 240)" }}
+                    >
+                      {description}
+                    </p>
+                  </motion.div>
+                ),
+              )}
+            </div>
+          </motion.section>
+
+          {/* Certifications / Trusted By */}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.33 }}
+            className="mb-12"
+            aria-labelledby="certs-heading"
+          >
+            <div className="flex items-center gap-3 mb-5">
+              <span
+                className="text-hud"
+                style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
+              >
+                {"04 //"}
+              </span>
+              <h2
+                id="certs-heading"
+                className="font-display font-bold text-2xl text-foreground tracking-tight"
+              >
+                Trusted By
+              </h2>
+            </div>
+
+            {/* Scrollable rail */}
+            <div className="relative">
+              {/* Left fade edge */}
+              <div
+                aria-hidden="true"
+                className="absolute left-0 top-0 bottom-3 w-10 pointer-events-none z-10"
+                style={{
+                  background:
+                    "linear-gradient(to right, oklch(0.06 0.008 240) 0%, transparent 100%)",
+                }}
+              />
+              {/* Right fade edge */}
+              <div
+                aria-hidden="true"
+                className="absolute right-0 top-0 bottom-3 w-10 pointer-events-none z-10"
+                style={{
+                  background:
+                    "linear-gradient(to left, oklch(0.06 0.008 240) 0%, transparent 100%)",
+                }}
+              />
+
+              <ul
+                className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory scroll-smooth list-none m-0 p-0"
+                style={{ scrollbarWidth: "none" }}
+                aria-label="Partner certifications"
+              >
+                {CERTIFICATIONS.map(
+                  ({ company, badge, color, logoSrc, logoAlt }, i) => (
+                    <motion.li
+                      key={company}
+                      initial={{ opacity: 0, scale: 0.92 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, delay: 0.38 + i * 0.1 }}
+                      className="flex-shrink-0 w-56 snap-start p-5 clip-corner flex flex-col items-center gap-3 hud-border"
+                      style={{
+                        backgroundColor: `oklch(from ${color} l c h / 6%)`,
+                        boxShadow: `0 0 24px ${color}30, inset 0 0 12px ${color}08`,
+                      }}
+                      data-ocid="about.card"
+                    >
+                      {/* Real Logo image */}
+                      <div
+                        className="w-full h-14 flex items-center justify-center rounded-sm overflow-hidden"
+                        style={{
+                          backgroundColor: `oklch(from ${color} l c h / 6%)`,
+                          border: `1px solid ${color}20`,
+                          padding: "8px 12px",
+                        }}
+                      >
+                        <img
+                          src={logoSrc}
+                          alt={logoAlt}
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                            objectFit: "contain",
+                            filter: "brightness(1.1)",
+                          }}
+                          loading="lazy"
+                        />
+                      </div>
+
+                      {/* Company name */}
+                      <h3 className="font-display font-bold text-base text-foreground text-center leading-tight">
+                        {company}
+                      </h3>
+
+                      {/* Badge */}
+                      <span
+                        className="font-mono text-xs uppercase tracking-wider px-3 py-1 text-center"
+                        style={{
+                          color,
+                          backgroundColor: `oklch(from ${color} l c h / 12%)`,
+                          border: `1px solid ${color}35`,
+                          borderRadius: "0.15rem",
+                        }}
+                      >
+                        {badge}
+                      </span>
+                    </motion.li>
+                  ),
+                )}
+              </ul>
+            </div>
+          </motion.section>
+
+          {/* Team */}
+          <motion.section
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.41 }}
+            aria-labelledby="team-heading"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <span
+                className="text-hud"
+                style={{ color: "oklch(0.78 0.18 210)", opacity: 0.7 }}
+              >
+                {"05 //"}
+              </span>
+              <h2
+                id="team-heading"
+                className="font-display font-bold text-2xl text-foreground tracking-tight"
+              >
+                Meet the Team
+              </h2>
+            </div>
+            <div className="flex flex-col gap-5">
+              {TEAM.map(
+                (
+                  {
+                    initial,
+                    name,
+                    role,
+                    bio,
+                    accentColor,
+                    roleColor,
+                    roleFontColor,
+                  },
+                  i,
+                ) => (
+                  <motion.article
+                    key={name}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.45, delay: 0.45 + i * 0.1 }}
+                    className="p-6 clip-corner"
+                    style={{
+                      backgroundColor: "oklch(0.075 0.006 235 / 80%)",
+                      border: `1px solid ${accentColor}20`,
+                      boxShadow: `0 0 20px ${accentColor}08`,
+                    }}
+                    aria-label={`${name}, ${role}`}
+                    data-ocid="about.card"
+                  >
+                    <div className="flex items-start gap-5">
+                      {/* Avatar - sharp square */}
+                      <div
+                        className="w-16 h-16 flex items-center justify-center flex-shrink-0 font-display font-bold text-2xl"
+                        style={{
+                          backgroundColor: accentColor,
+                          color: "oklch(0.04 0.005 240)",
+                          borderRadius: "0.2rem",
+                          boxShadow: `0 0 16px ${accentColor}40`,
+                        }}
+                        aria-hidden
+                      >
+                        {initial}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="font-display font-bold text-lg text-foreground">
+                            {name}
+                          </h3>
+                          <span
+                            className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5"
+                            style={{
+                              backgroundColor: roleColor,
+                              color: roleFontColor,
+                              borderRadius: "0.1rem",
+                              border: `1px solid ${roleFontColor}30`,
+                            }}
+                          >
+                            {role}
+                          </span>
+                        </div>
+                        <p
+                          className="text-sm leading-relaxed"
+                          style={{ color: "oklch(0.68 0.006 240)" }}
+                        >
+                          {bio}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.article>
+                ),
+              )}
+            </div>
+          </motion.section>
+
+          {/* Footer attribution */}
+          <footer
+            className="mt-16 pt-6 text-center"
+            style={{
+              borderTopWidth: "1px",
+              borderTopStyle: "solid",
+              borderTopColor: "oklch(0.78 0.18 210 / 15%)",
+            }}
+          >
+            <p
+              className="text-[10px] font-mono uppercase tracking-wider"
+              style={{ color: "oklch(0.38 0.005 240)" }}
+            >
+              &copy; {new Date().getFullYear()} &middot; Built with ❤️ using{" "}
+              <a
+                href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-cyan transition-colors"
+                style={{ color: "oklch(0.48 0.005 240)" }}
+              >
+                caffeine.ai
+              </a>
+            </p>
+          </footer>
+        </div>
+      </div>
+
+      {/* ── Keyframe styles ── */}
+      <style>{`
+        @keyframes about-twinkle {
+          0%, 100% { opacity: var(--star-opacity, 0.4); transform: scale(1); }
+          50% { opacity: calc(var(--star-opacity, 0.4) * 0.3); transform: scale(0.7); }
+        }
+        .about-star {
+          animation: about-twinkle 3.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
