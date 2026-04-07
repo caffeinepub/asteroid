@@ -4,6 +4,7 @@
  * No network required — fully local, instant responses.
  */
 
+import { EXTRA_RULES } from "./offlineAI_extra";
 type Rule = {
   patterns: RegExp[];
   response: string | ((match: RegExpMatchArray, input: string) => string);
@@ -1028,6 +1029,7 @@ const RULES: Rule[] = [
       return `I'm in offline mode, so I don't have encyclopaedic information about "${topic}". For factual lookups, switch to online mode (toggle in the chat header). I can definitely help you with practical tasks, home, health, finance, travel, tech, education, hobbies, and daily life — just ask!`;
     },
   },
+  ...EXTRA_RULES,
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
