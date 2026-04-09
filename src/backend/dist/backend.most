@@ -1,0 +1,49 @@
+// Version: 1.0.0
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type Preferences__899524316 =
+  {
+    haptics : Bool;
+    highContrast : Bool;
+    language : Text;
+    mode : Text;
+    speechRate : Nat;
+    wakeWord : Text
+  };
+type Task__972485619 =
+  {
+    category : Text;
+    completed : Bool;
+    description : Text;
+    dueDate : Int;
+    title : Text
+  };
+type VoiceLog__271572872 =
+  {assistantResponse : Text; timestamp : Int; userInput : Text};
+actor {
+  stable var aiProvider : Text;
+  stable var nextTaskId : Nat;
+  stable var openaiKey : ?Text;
+  stable preferences :
+    {
+      var root : Node__46230540<Principal, Preferences__899524316>;
+      var size : Nat__490723111
+    };
+  stable tasks :
+    {
+      var root : Node__46230540<Nat, Task__972485619>;
+      var size : Nat__490723111
+    };
+  stable voiceLogs :
+    {
+      var root : Node__46230540<Principal, [VoiceLog__271572872]>;
+      var size : Nat__490723111
+    }
+};

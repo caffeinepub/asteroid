@@ -94,25 +94,6 @@ export interface TransformationOutput {
     body: Uint8Array;
     headers: Array<http_header>;
 }
-export interface TransformationInput {
-    context: Uint8Array;
-    response: http_request_result;
-}
-export interface Preferences {
-    mode: string;
-    speechRate: bigint;
-    haptics: boolean;
-    language: string;
-    wakeWord: string;
-    highContrast: boolean;
-}
-export interface Task {
-    title: string;
-    completed: boolean;
-    dueDate: bigint;
-    description: string;
-    category: string;
-}
 export interface TaskWithId {
     id: bigint;
     title: string;
@@ -121,10 +102,29 @@ export interface TaskWithId {
     description: string;
     category: string;
 }
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
+}
 export interface VoiceLog {
     userInput: string;
     assistantResponse: string;
     timestamp: bigint;
+}
+export interface Task {
+    title: string;
+    completed: boolean;
+    dueDate: bigint;
+    description: string;
+    category: string;
+}
+export interface Preferences {
+    mode: string;
+    speechRate: bigint;
+    haptics: boolean;
+    language: string;
+    wakeWord: string;
+    highContrast: boolean;
 }
 export interface http_header {
     value: string;
@@ -145,13 +145,13 @@ export interface backendInterface {
     chatWithAI(message: string): Promise<string>;
     completeTask(taskId: bigint): Promise<void>;
     deleteTask(taskId: bigint): Promise<void>;
+    getAIProvider(): Promise<string>;
     getAllTasks(): Promise<Array<TaskWithId>>;
     getPreferences(user: Principal): Promise<Preferences>;
     getTask(taskId: bigint): Promise<TaskWithId>;
     getTasksByCategory(category: string): Promise<Array<TaskWithId>>;
     getTasksByCompletion(completed: boolean): Promise<Array<TaskWithId>>;
     getVoiceLogs(user: Principal): Promise<Array<VoiceLog>>;
-    getAIProvider(): Promise<string>;
     hasOpenAIKey(): Promise<boolean>;
     setAIConfig(provider: string, key: string): Promise<void>;
     /**
@@ -232,6 +232,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteTask(arg0);
+            return result;
+        }
+    }
+    async getAIProvider(): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAIProvider();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAIProvider();
             return result;
         }
     }
@@ -333,6 +347,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setAIConfig(arg0: string, arg1: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setAIConfig(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setAIConfig(arg0, arg1);
+            return result;
+        }
+    }
     async setOpenAIKey(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -386,34 +414,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.updateTask(arg0, arg1);
-            return result;
-        }
-    }
-    async getAIProvider(): Promise<string> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAIProvider();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAIProvider();
-            return result;
-        }
-    }
-    async setAIConfig(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.setAIConfig(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.setAIConfig(arg0, arg1);
             return result;
         }
     }

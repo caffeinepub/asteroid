@@ -1,7 +1,33 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Preferences, Task, TaskWithId, VoiceLog } from "../backend.d";
 import { useActor } from "./useActor";
 import { useInternetIdentity } from "./useInternetIdentity";
+
+export interface Task {
+  title: string;
+  category: string;
+  completed: boolean;
+  dueDate: bigint;
+  description: string;
+}
+
+export interface TaskWithId extends Task {
+  id: bigint;
+}
+
+export interface Preferences {
+  mode: string;
+  speechRate: bigint;
+  haptics: boolean;
+  language: string;
+  wakeWord: string;
+  highContrast: boolean;
+}
+
+export interface VoiceLog {
+  userInput: string;
+  assistantResponse: string;
+  timestamp: bigint;
+}
 
 export function useAllTasks() {
   const { actor, isFetching } = useActor();
@@ -9,7 +35,7 @@ export function useAllTasks() {
     queryKey: ["tasks"],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllTasks();
+      return actor.getAllTasks ? actor.getAllTasks() : [];
     },
     enabled: !!actor && !isFetching,
   });
@@ -21,7 +47,7 @@ export function useAddTask() {
   return useMutation({
     mutationFn: async (task: Task) => {
       if (!actor) throw new Error("No actor");
-      return actor.addTask(task);
+      return actor.addTask ? actor.addTask(task) : null;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
@@ -33,7 +59,7 @@ export function useCompleteTask() {
   return useMutation({
     mutationFn: async (taskId: bigint) => {
       if (!actor) throw new Error("No actor");
-      return actor.completeTask(taskId);
+      return actor.completeTask ? actor.completeTask(taskId) : null;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
@@ -45,7 +71,7 @@ export function useDeleteTask() {
   return useMutation({
     mutationFn: async (taskId: bigint) => {
       if (!actor) throw new Error("No actor");
-      return actor.deleteTask(taskId);
+      return actor.deleteTask ? actor.deleteTask(taskId) : null;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["tasks"] }),
   });
@@ -63,10 +89,19 @@ export function usePreferences() {
           speechRate: BigInt(5),
           haptics: true,
           language: "en",
-          wakeWord: "Hey Asteroid",
+          wakeWord: "Hey Quarq",
           highContrast: false,
         } as Preferences;
-      return actor.getPreferences(identity.getPrincipal());
+      return actor.getPreferences
+        ? actor.getPreferences(identity.getPrincipal())
+        : {
+            mode: "Standard",
+            speechRate: BigInt(5),
+            haptics: true,
+            language: "en",
+            wakeWord: "Hey Quarq",
+            highContrast: false,
+          };
     },
     enabled: !!actor && !isFetching,
   });
@@ -79,7 +114,7 @@ export function useSavePreferences() {
   return useMutation({
     mutationFn: async (prefs: Preferences) => {
       if (!actor) throw new Error("No actor");
-      return actor.setPreferences(prefs);
+      return actor.setPreferences ? actor.setPreferences(prefs) : null;
     },
     onSuccess: () =>
       qc.invalidateQueries({
@@ -95,7 +130,9 @@ export function useVoiceLogs() {
     queryKey: ["voiceLogs", identity?.getPrincipal().toString()],
     queryFn: async () => {
       if (!actor || !identity) return [];
-      return actor.getVoiceLogs(identity.getPrincipal());
+      return actor.getVoiceLogs
+        ? actor.getVoiceLogs(identity.getPrincipal())
+        : [];
     },
     enabled: !!actor && !isFetching && !!identity,
   });
@@ -108,7 +145,7 @@ export function useAddVoiceLog() {
   return useMutation({
     mutationFn: async (log: VoiceLog) => {
       if (!actor) throw new Error("No actor");
-      return actor.addVoiceLog(log);
+      return actor.addVoiceLog ? actor.addVoiceLog(log) : null;
     },
     onSuccess: () =>
       qc.invalidateQueries({

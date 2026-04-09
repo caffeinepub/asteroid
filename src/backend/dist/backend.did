@@ -1,0 +1,78 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
+type VoiceLog = 
+ record {
+   assistantResponse: text;
+   timestamp: int;
+   userInput: text;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
+ };
+type TaskWithId = 
+ record {
+   category: text;
+   completed: bool;
+   description: text;
+   dueDate: int;
+   id: nat;
+   title: text;
+ };
+type Task = 
+ record {
+   category: text;
+   completed: bool;
+   description: text;
+   dueDate: int;
+   title: text;
+ };
+type Preferences = 
+ record {
+   haptics: bool;
+   highContrast: bool;
+   language: text;
+   mode: text;
+   speechRate: nat;
+   wakeWord: text;
+ };
+service : {
+  /// ***********
+  /// ***********
+  addTask: (task: Task) -> (nat);
+  addVoiceLog: (log: VoiceLog) -> ();
+  chatWithAI: (message: text) -> (text);
+  completeTask: (taskId: nat) -> ();
+  deleteTask: (taskId: nat) -> ();
+  getAIProvider: () -> (text) query;
+  getAllTasks: () -> (vec TaskWithId) query;
+  getPreferences: (user: principal) -> (Preferences) query;
+  getTask: (taskId: nat) -> (TaskWithId) query;
+  getTasksByCategory: (category: text) -> (vec TaskWithId) query;
+  getTasksByCompletion: (completed: bool) -> (vec TaskWithId) query;
+  getVoiceLogs: (user: principal) -> (vec VoiceLog) query;
+  hasOpenAIKey: () -> (bool) query;
+  setAIConfig: (provider: text, key: text) -> ();
+  /// ***********
+  /// ***********
+  setOpenAIKey: (key: text) -> ();
+  setPreferences: (prefs: Preferences) -> ();
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  updateTask: (taskId: nat, task: Task) -> ();
+}

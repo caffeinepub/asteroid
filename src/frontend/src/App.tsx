@@ -14,7 +14,7 @@ import HelpPage from "./pages/Help";
 import NucleusModePage from "./pages/NucleusMode";
 import SettingsPage from "./pages/Settings";
 import TasksPage from "./pages/Tasks";
-import WelcomeSplash from "./pages/WelcomeSplash";
+import WelcomeSplash from "./pages/WelcomePage";
 
 export type AppPage =
   | "dashboard"

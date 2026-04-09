@@ -6,7 +6,7 @@ import Iter "mo:core/Iter";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
 import Array "mo:core/Array";
-import OutCall "http-outcalls/outcall";
+import OutCall "mo:caffeineai-http-outcalls/outcall";
 
 
 

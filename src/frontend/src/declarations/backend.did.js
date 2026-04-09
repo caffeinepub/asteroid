@@ -15,6 +15,11 @@ export const Task = IDL.Record({
   'description' : IDL.Text,
   'category' : IDL.Text,
 });
+export const VoiceLog = IDL.Record({
+  'userInput' : IDL.Text,
+  'assistantResponse' : IDL.Text,
+  'timestamp' : IDL.Int,
+});
 export const TaskWithId = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
@@ -22,11 +27,6 @@ export const TaskWithId = IDL.Record({
   'dueDate' : IDL.Int,
   'description' : IDL.Text,
   'category' : IDL.Text,
-});
-export const VoiceLog = IDL.Record({
-  'userInput' : IDL.Text,
-  'assistantResponse' : IDL.Text,
-  'timestamp' : IDL.Int,
 });
 export const Preferences = IDL.Record({
   'mode' : IDL.Text,
@@ -61,12 +61,16 @@ export const idlService = IDL.Service({
   'chatWithAI' : IDL.Func([IDL.Text], [IDL.Text], []),
   'completeTask' : IDL.Func([IDL.Nat], [], []),
   'deleteTask' : IDL.Func([IDL.Nat], [], []),
-  'getAllTasks' : IDL.Func([], [IDL.Vec(TaskWithId)], ['query']),
   'getAIProvider' : IDL.Func([], [IDL.Text], ['query']),
+  'getAllTasks' : IDL.Func([], [IDL.Vec(TaskWithId)], ['query']),
   'getPreferences' : IDL.Func([IDL.Principal], [Preferences], ['query']),
   'getTask' : IDL.Func([IDL.Nat], [TaskWithId], ['query']),
   'getTasksByCategory' : IDL.Func([IDL.Text], [IDL.Vec(TaskWithId)], ['query']),
-  'getTasksByCompletion' : IDL.Func([IDL.Bool], [IDL.Vec(TaskWithId)], ['query']),
+  'getTasksByCompletion' : IDL.Func(
+      [IDL.Bool],
+      [IDL.Vec(TaskWithId)],
+      ['query'],
+    ),
   'getVoiceLogs' : IDL.Func([IDL.Principal], [IDL.Vec(VoiceLog)], ['query']),
   'hasOpenAIKey' : IDL.Func([], [IDL.Bool], ['query']),
   'setAIConfig' : IDL.Func([IDL.Text, IDL.Text], [], []),
@@ -90,6 +94,11 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'category' : IDL.Text,
   });
+  const VoiceLog = IDL.Record({
+    'userInput' : IDL.Text,
+    'assistantResponse' : IDL.Text,
+    'timestamp' : IDL.Int,
+  });
   const TaskWithId = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
@@ -97,11 +106,6 @@ export const idlFactory = ({ IDL }) => {
     'dueDate' : IDL.Int,
     'description' : IDL.Text,
     'category' : IDL.Text,
-  });
-  const VoiceLog = IDL.Record({
-    'userInput' : IDL.Text,
-    'assistantResponse' : IDL.Text,
-    'timestamp' : IDL.Int,
   });
   const Preferences = IDL.Record({
     'mode' : IDL.Text,
@@ -133,12 +137,20 @@ export const idlFactory = ({ IDL }) => {
     'chatWithAI' : IDL.Func([IDL.Text], [IDL.Text], []),
     'completeTask' : IDL.Func([IDL.Nat], [], []),
     'deleteTask' : IDL.Func([IDL.Nat], [], []),
-    'getAllTasks' : IDL.Func([], [IDL.Vec(TaskWithId)], ['query']),
     'getAIProvider' : IDL.Func([], [IDL.Text], ['query']),
+    'getAllTasks' : IDL.Func([], [IDL.Vec(TaskWithId)], ['query']),
     'getPreferences' : IDL.Func([IDL.Principal], [Preferences], ['query']),
     'getTask' : IDL.Func([IDL.Nat], [TaskWithId], ['query']),
-    'getTasksByCategory' : IDL.Func([IDL.Text], [IDL.Vec(TaskWithId)], ['query']),
-    'getTasksByCompletion' : IDL.Func([IDL.Bool], [IDL.Vec(TaskWithId)], ['query']),
+    'getTasksByCategory' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(TaskWithId)],
+        ['query'],
+      ),
+    'getTasksByCompletion' : IDL.Func(
+        [IDL.Bool],
+        [IDL.Vec(TaskWithId)],
+        ['query'],
+      ),
     'getVoiceLogs' : IDL.Func([IDL.Principal], [IDL.Vec(VoiceLog)], ['query']),
     'hasOpenAIKey' : IDL.Func([], [IDL.Bool], ['query']),
     'setAIConfig' : IDL.Func([IDL.Text, IDL.Text], [], []),

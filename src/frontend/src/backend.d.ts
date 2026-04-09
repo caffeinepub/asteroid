@@ -12,25 +12,6 @@ export interface TransformationOutput {
     body: Uint8Array;
     headers: Array<http_header>;
 }
-export interface TransformationInput {
-    context: Uint8Array;
-    response: http_request_result;
-}
-export interface Preferences {
-    mode: string;
-    speechRate: bigint;
-    haptics: boolean;
-    language: string;
-    wakeWord: string;
-    highContrast: boolean;
-}
-export interface Task {
-    title: string;
-    completed: boolean;
-    dueDate: bigint;
-    description: string;
-    category: string;
-}
 export interface TaskWithId {
     id: bigint;
     title: string;
@@ -39,10 +20,29 @@ export interface TaskWithId {
     description: string;
     category: string;
 }
+export interface TransformationInput {
+    context: Uint8Array;
+    response: http_request_result;
+}
 export interface VoiceLog {
     userInput: string;
     assistantResponse: string;
     timestamp: bigint;
+}
+export interface Task {
+    title: string;
+    completed: boolean;
+    dueDate: bigint;
+    description: string;
+    category: string;
+}
+export interface Preferences {
+    mode: string;
+    speechRate: bigint;
+    haptics: boolean;
+    language: string;
+    wakeWord: string;
+    highContrast: boolean;
 }
 export interface http_header {
     value: string;
@@ -54,13 +54,17 @@ export interface http_request_result {
     headers: Array<http_header>;
 }
 export interface backendInterface {
+    /**
+     * / ***********
+     * / ***********
+     */
     addTask(task: Task): Promise<bigint>;
     addVoiceLog(log: VoiceLog): Promise<void>;
     chatWithAI(message: string): Promise<string>;
     completeTask(taskId: bigint): Promise<void>;
     deleteTask(taskId: bigint): Promise<void>;
-    getAllTasks(): Promise<Array<TaskWithId>>;
     getAIProvider(): Promise<string>;
+    getAllTasks(): Promise<Array<TaskWithId>>;
     getPreferences(user: Principal): Promise<Preferences>;
     getTask(taskId: bigint): Promise<TaskWithId>;
     getTasksByCategory(category: string): Promise<Array<TaskWithId>>;
@@ -68,6 +72,10 @@ export interface backendInterface {
     getVoiceLogs(user: Principal): Promise<Array<VoiceLog>>;
     hasOpenAIKey(): Promise<boolean>;
     setAIConfig(provider: string, key: string): Promise<void>;
+    /**
+     * / ***********
+     * / ***********
+     */
     setOpenAIKey(key: string): Promise<void>;
     setPreferences(prefs: Preferences): Promise<void>;
     transform(input: TransformationInput): Promise<TransformationOutput>;
